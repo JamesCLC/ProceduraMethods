@@ -11,6 +11,7 @@
 #include <d3d11.h>
 #include <d3dx10math.h>
 #include <stdio.h>
+#include "improvednoise.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,10 +48,8 @@ public:
 	void Render(ID3D11DeviceContext*);
 	bool GenerateHeightMap(ID3D11Device* device, bool keydown);
 	int  GetIndexCount();
-
-	///
 	bool SmoothTerrain(ID3D11Device* device, bool keydown);
-	///
+
 
 private:
 	bool LoadHeightMap(char*);
@@ -58,9 +57,8 @@ private:
 	bool CalculateNormals();
 	void ShutdownHeightMap();
 
-	///
 	void RandomHeightFeild();
-	///
+	void ApplyPerlinNoise();
 
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
@@ -75,6 +73,7 @@ private:
 	int m_vertexCount, m_indexCount;
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	HeightMapType* m_heightMap;
+	improvednoise* perlinNoise;
 };
 
 #endif
