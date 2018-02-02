@@ -70,6 +70,13 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 		return false;
 	}
 
+	// Initialse the Perlin Noise
+	perlinNoise = new improvednoise();
+	if (!perlinNoise)
+	{
+		return false;
+	}
+
 	return true;
 }
 bool TerrainClass::Initialize(ID3D11Device* device, char* heightMapFilename)
@@ -113,6 +120,14 @@ void TerrainClass::Shutdown()
 	// Release the height map data.
 	ShutdownHeightMap();
 
+	// Release the perlin noise data.
+	if (perlinNoise)
+	{
+		delete perlinNoise;
+		perlinNoise = 0;
+		perlinNoise = nullptr;
+	}
+
 	return;
 }
 
@@ -141,7 +156,9 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 	if(keydown&&(!m_terrainGeneratedToggle))
 	{
 
-		RandomHeightFeild();
+		//RandomHeightFeild();
+
+		ApplyPerlinNoise();
 
 		result = CalculateNormals();
 		if(!result)
@@ -162,36 +179,6 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 	{
 		m_terrainGeneratedToggle = false;
 	}
-
-	/////
-	//// Smooth the terrain when a button is held down.
-	//if (keydown && (!m_terrainSmoothedToggle))
-	//{
-
-	//	//SmoothTerrain();
-
-	//	result = CalculateNormals();
-	//	if (!result)
-	//	{
-	//		return false;
-	//	}
-
-	//	// Initialize the vertex and index buffer that hold the geometry for the terrain.
-	//	result = InitializeBuffers(device);
-	//	if (!result)
-	//	{
-	//		return false;
-	//	}
-
-	//	m_terrainSmoothedToggle = true;
-	//}
-	//else
-	//{
-	//	m_terrainSmoothedToggle = false;
-	//}
-	
-
-
 	return true;
 }
 
@@ -483,7 +470,24 @@ void TerrainClass::RandomHeightFeild()
 	}
 }
 
-///
+void TerrainClass::ApplyPerlinNoise()
+{
+	int index;
+	float height = 0.0;
+
+	for (int j = 0; j<m_terrainHeight; j++)
+	{
+		for (int i = 0; i<m_terrainWidth; i++)
+		{
+			index = (m_terrainHeight * j) + i;
+
+			m_heightMap[index].x = (float)i;
+			m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 10;
+			m_heightMap[index].z = (float)j;
+		}
+	}
+}
+
 bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 {
 	// We want to smooth out terrain so it looks less awful.
@@ -590,7 +594,6 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 		m_terrainSmoothedToggle = false;
 	}
 }
-///
 
 bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 {
