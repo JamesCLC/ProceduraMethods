@@ -463,7 +463,6 @@ void TerrainClass::RandomHeightFeild()
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			//m_heightMap[index].y = (float)(sin((float)j/(m_terrainWidth/24))*3.0) + (cos((float)i / (m_terrainWidth / 15))*3.0); //magic numbers ahoy, just to ramp up the height of the sin function so its visible.
 			m_heightMap[index].y = rand() % 10 - 5;
 			m_heightMap[index].z = (float)j;
 		}

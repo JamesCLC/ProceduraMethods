@@ -66,9 +66,8 @@ private:
 	
 private:
 	bool m_terrainGeneratedToggle;
-	///
 	bool m_terrainSmoothedToggle;
-	///
+
 	int m_terrainWidth, m_terrainHeight;
 	int m_vertexCount, m_indexCount;
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;

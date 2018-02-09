@@ -85,7 +85,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	// Set the initial position of the camera.
 	cameraX = 50.0f;
 	cameraY = 2.0f;
-	cameraZ = -7.0f;
+	cameraZ = 7.0f;
 
 	m_Camera->SetPosition(cameraX, cameraY, cameraZ);
 
