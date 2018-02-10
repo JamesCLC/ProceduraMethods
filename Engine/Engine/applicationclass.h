@@ -62,6 +62,10 @@ private:
 	TextClass* m_Text;
 	TerrainShaderClass* m_TerrainShader;
 	LightClass* m_Light;
+
+	// My Varialbes
+	int j_TerrainWidth = 128;
+	int j_TerrainLegnth = 128;
 };
 
 #endif

@@ -78,14 +78,14 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialize a base view matrix with the camera for 2D user interface rendering.
-	m_Camera->SetPosition(0.0f, 0.0f, -1.0f);
+	m_Camera->SetPosition(0.0f, .0f, -1.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
 	// Set the initial position of the camera.
 	cameraX = 50.0f;
 	cameraY = 2.0f;
-	cameraZ = -7.0f;
+	cameraZ = 7.0f;
 
 	m_Camera->SetPosition(cameraX, cameraY, cameraZ);
 
@@ -98,7 +98,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	// Initialize the terrain object.
 //	result = m_Terrain->Initialize(m_Direct3D->GetDevice(), "../Engine/data/heightmap01.bmp");
-	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 128,128);   //initialise the flat terrain.
+	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), j_TerrainWidth, j_TerrainLegnth);   //initialise the flat terrain.
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the terrain object.", L"Error", MB_OK);

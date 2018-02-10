@@ -63,7 +63,7 @@ private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
-	
+
 private:
 	bool m_terrainGeneratedToggle;
 	///
