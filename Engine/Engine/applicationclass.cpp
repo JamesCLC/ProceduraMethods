@@ -363,6 +363,20 @@ bool ApplicationClass::Frame()
 		return false;
 	}
 
+	///
+	// Get the current position of the camera.
+	position = m_Camera->GetPosition();
+
+	// Get the height of the triangle that is directly underneath the given camera position.
+	foundHeight = m_Terrain->GetHeightAtPosition(position.x, position.z, height);
+	if (foundHeight)
+	{
+		// If there was a triangle under the camera then position the camera just above it by two units.
+		m_Camera->SetPosition(position.x, height + 2.0f, position.z);
+	}
+
+	///
+
 	// Render the graphics.
 	result = RenderGraphics();
 	if(!result)
@@ -495,3 +509,23 @@ bool ApplicationClass::RenderGraphics()
 
 	return true;
 }
+
+/* Hello, James. I know things are hard right now, but it'll be alright in the end. Trust me.
+
+With that said, let's try and break down the issues I'm having right now.
+
+- The Rastertek Tutorial for doing exactly what I want is based on a Quad Tree System. 
+I could have a go at implementing this myself. Matt said that it's pretty fast and easy, but not worth many marks.
+Furthermore, this approach wouldn't be appropriate for a planet.
+=> Matt mentioned occlusion culling as a really impressive technique. I could research if this is worth pursuing.
+
+- For the purporse of actually getting this raycasting bullshit to work, I need to do a couple of things.
+1) I need to identify the key funcntionality the tutorial provides, stripped of its quad tree basis.
+2) I need to decide where this functionality best fits in with the rest of the framework.
+3) I need to then try to implement it, keeping with good data maagement as much as possible.
+4) I'll need to test, and itterate as possible.
+5) I'll need to give myself a pat on the back when it's done.
+
+Now let's do this.
+
+*/

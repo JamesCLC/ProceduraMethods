@@ -50,7 +50,6 @@ public:
 	int  GetIndexCount();
 	bool SmoothTerrain(ID3D11Device* device, bool keydown);
 
-
 private:
 	bool LoadHeightMap(char*);
 	void NormalizeHeightMap();
@@ -66,9 +65,8 @@ private:
 
 private:
 	bool m_terrainGeneratedToggle;
-	///
 	bool m_terrainSmoothedToggle;
-	///
+
 	int m_terrainWidth, m_terrainHeight;
 	int m_vertexCount, m_indexCount;
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
