@@ -482,8 +482,14 @@ void TerrainClass::ApplyPerlinNoise()
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 30;
 			m_heightMap[index].z = (float)j;
+			m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 30;
+
+			// Test - Form Plataues
+			if (m_heightMap[index].y > 10)
+			{
+				m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 10;
+			}
 		}
 	}
 }
