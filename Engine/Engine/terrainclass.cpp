@@ -621,7 +621,7 @@ bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
 				// Add up all the surrounding vertecies.
 				index = (m_terrainHeight * (j - 1)) + i - 1;
 
-				if (m_heightMap[index].y > 5)
+				if (m_heightMap[index].y > 1)
 				{
 					float average = 0.0f;
 
@@ -684,6 +684,63 @@ bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
 
 					// Set the current vertex to the average value.
 					m_heightMap[index].y = average;
+					 
+					///
+					// Set the surrounding vertex to be the average? Perhaps the average between their current height and the overall average?
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * j) + i - 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i - 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j - 1)) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j - 1)) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * j) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * j) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+					///
+
 				} // End if y>10
 			} // End loop
 		} // End Loop
