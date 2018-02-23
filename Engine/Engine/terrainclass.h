@@ -48,8 +48,11 @@ public:
 	void Render(ID3D11DeviceContext*);
 	bool GenerateHeightMap(ID3D11Device* device, bool keydown);
 	int  GetIndexCount();
+
+	//
 	bool SmoothTerrain(ID3D11Device* device, bool keydown);
-	//bool SmoothPeaks(ID3D11Device* device, bool keydown);
+	bool FlattenPeaks(ID3D11Device* device, bool keydown);
+	//
 
 
 private:
@@ -69,6 +72,7 @@ private:
 	bool m_terrainGeneratedToggle;
 	///
 	bool m_terrainSmoothedToggle;
+	bool m_terrainFlattenPeaks;
 	///
 	int m_terrainWidth, m_terrainHeight;
 	int m_vertexCount, m_indexCount;

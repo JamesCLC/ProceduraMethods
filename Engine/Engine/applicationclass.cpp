@@ -388,8 +388,13 @@ bool ApplicationClass::HandleInput(float frameTime)
 	m_Terrain->GenerateHeightMap(m_Direct3D->GetDevice(), keyDown);	
 
 	///
-	keyDown = m_Input->ISXPressed();
+	keyDown = m_Input->IsXPressed();
 	m_Terrain->SmoothTerrain(m_Direct3D->GetDevice(), keyDown);
+
+	if (keyDown = m_Input->IsCPressed())
+	{
+		m_Terrain->FlattenPeaks(m_Direct3D->GetDevice(), keyDown);
+	}
 	///
 
 	keyDown = m_Input->IsLeftPressed();
