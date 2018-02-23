@@ -12,6 +12,9 @@
 #include <d3dx10math.h>
 #include <stdio.h>
 #include "improvednoise.h"
+///
+#include "textureclass.h"
+///
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +46,7 @@ public:
 	~TerrainClass();
 
 	bool Initialize(ID3D11Device*, char*);
-	bool InitializeTerrain(ID3D11Device*, int terrainWidth, int terrainHeight);
+	bool InitializeTerrain(ID3D11Device*, int terrainWidth, int terrainHeight, WCHAR*, WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 	bool GenerateHeightMap(ID3D11Device* device, bool keydown);
@@ -52,6 +55,9 @@ public:
 	//
 	bool SmoothTerrain(ID3D11Device* device, bool keydown);
 	bool FlattenPeaks(ID3D11Device* device, bool keydown);
+
+	ID3D11ShaderResourceView* GetSandTexture();
+	ID3D11ShaderResourceView* GetSlopeTexture();
 	//
 
 
@@ -73,6 +79,9 @@ private:
 	///
 	bool m_terrainSmoothedToggle;
 	bool m_terrainFlattenPeaks;
+
+	TextureClass *m_SandTexture;
+	TextureClass *m_SlopeTexture;
 	///
 	int m_terrainWidth, m_terrainHeight;
 	int m_vertexCount, m_indexCount;

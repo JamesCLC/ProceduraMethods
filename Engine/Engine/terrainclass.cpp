@@ -11,6 +11,12 @@ TerrainClass::TerrainClass()
 	m_indexBuffer = 0;
 	m_heightMap = 0;
 	m_terrainGeneratedToggle = false;
+
+	///
+	// My textures
+	m_SandTexture = 0;
+	m_SlopeTexture = 0;
+	///
 }
 
 
@@ -23,7 +29,8 @@ TerrainClass::~TerrainClass()
 {
 }
 
-bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight)
+
+bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* sandTexture, WCHAR* slopeTexture)
 {
 	int index;
 	float height = 0.0;
@@ -54,7 +61,6 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 		}
 	}
 
-
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.
 	result = CalculateNormals();
@@ -76,9 +82,40 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	{
 		return false;
 	}
+	
+	// Load the textures.
+	// Create the sand texture object.
+	m_SandTexture = new TextureClass;
+	if (!m_SandTexture)
+	{
+		return false;
+	}
+
+	// Initialize the sand texture object.
+	result = m_SandTexture->Initialize(device, sandTexture);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Create the slope texture object.
+	m_SlopeTexture = new TextureClass;
+	if (!m_SlopeTexture)
+	{
+		return false;
+	}
+
+	// Initialize the slope texture object.
+	result = m_SlopeTexture->Initialize(device, slopeTexture);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
+
+// Unused Initialise function that is mandated by the origional Rastertek framework.
 bool TerrainClass::Initialize(ID3D11Device* device, char* heightMapFilename)
 {
 	bool result;
@@ -128,6 +165,22 @@ void TerrainClass::Shutdown()
 		perlinNoise = nullptr;
 	}
 
+	// Release the sand texture.
+	if (m_SandTexture)
+	{
+		m_SandTexture->Shutdown();
+		delete m_SandTexture;
+		m_SandTexture = 0;
+	}
+
+	// Release the slope texture.
+	if (m_SlopeTexture)
+	{
+		m_SlopeTexture->Shutdown();
+		delete m_SlopeTexture;
+		m_SlopeTexture = 0;
+	}
+
 	return;
 }
 
@@ -155,9 +208,6 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 	//times per second. 
 	if(keydown&&(!m_terrainGeneratedToggle))
 	{
-
-		//RandomHeightFeild();
-
 		ApplyPerlinNoise();
 
 		result = CalculateNormals();
@@ -447,6 +497,7 @@ void TerrainClass::ShutdownHeightMap()
 	return;
 }
 
+// A funtion that offets each vertex in the y-axis by a random value in a given range.
 void TerrainClass::RandomHeightFeild()
 {
 	// loop through the terrain and set the hieghts how we want.This is where we generate the terrain
@@ -470,6 +521,7 @@ void TerrainClass::RandomHeightFeild()
 	}
 }
 
+// A function that offsets each vertex in the y-axis by a value sampled from Ken Perlin's Improved Noise.
 void TerrainClass::ApplyPerlinNoise()
 {
 	int index;
@@ -493,7 +545,6 @@ void TerrainClass::ApplyPerlinNoise()
 		}
 	}
 }
-
 
 // A function that smooths the entire terrain indiscriminately
 bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
@@ -602,7 +653,6 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 		m_terrainSmoothedToggle = false;
 	}
 }
-
 
 // A modified Smoothing function that targets the heightest points on the map.
 bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
@@ -770,6 +820,18 @@ bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
 	{
 		m_terrainSmoothedToggle = false;
 	}
+}
+
+
+ID3D11ShaderResourceView * TerrainClass::GetSandTexture()
+{
+	return m_SandTexture->GetTexture();
+}
+
+
+ID3D11ShaderResourceView * TerrainClass::GetSlopeTexture()
+{
+	return m_SlopeTexture->GetTexture();
 }
 
 
