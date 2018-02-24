@@ -4,6 +4,8 @@
 #include "terrainclass.h"
 #include <cmath>
 
+// http://www.rastertek.com/dx11ter03.html
+
 
 TerrainClass::TerrainClass()
 {
@@ -198,6 +200,7 @@ int TerrainClass::GetIndexCount()
 {
 	return m_indexCount;
 }
+
 
 bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 {
@@ -835,7 +838,6 @@ ID3D11ShaderResourceView * TerrainClass::GetSlopeTexture()
 }
 
 
-
 bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 {
 	VertexType* vertices;
@@ -882,36 +884,42 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 
 			// Upper left.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index3].x, m_heightMap[index3].y, m_heightMap[index3].z);
+			vertices[index].texture = D3DXVECTOR2(0.0f, 0.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
 			indices[index] = index;
 			index++;
 
 			// Upper right.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
+			vertices[index].texture = D3DXVECTOR2(1.0f, 0.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
+			vertices[index].texture = D3DXVECTOR2(0.0f, 1.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
+			vertices[index].texture = D3DXVECTOR2(0.0f, 1.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
 
 			// Upper right.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
+			vertices[index].texture = D3DXVECTOR2(1.0f, 0.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom right.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index2].x, m_heightMap[index2].y, m_heightMap[index2].z);
+			vertices[index].texture = D3DXVECTOR2(1.0f, 1.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index2].nx, m_heightMap[index2].ny, m_heightMap[index2].nz);
 			indices[index] = index;
 			index++;

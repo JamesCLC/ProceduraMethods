@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include "improvednoise.h"
 ///
+// See http://www.rastertek.com/dx11ter03.html
 #include "textureclass.h"
 ///
 
@@ -26,12 +27,14 @@ private:
 	struct VertexType
 	{
 		D3DXVECTOR3 position;
+		D3DXVECTOR2 texture;
 	    D3DXVECTOR3 normal;
 	};
 
 	struct HeightMapType 
 	{ 
 		float x, y, z;
+		float tu, tv;
 		float nx, ny, nz;
 	};
 

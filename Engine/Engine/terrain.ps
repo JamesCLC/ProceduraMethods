@@ -40,51 +40,39 @@ struct PixelInputType
 ////////////////////////////////////////////////////////////////////////////////
 float4 TerrainPixelShader(PixelInputType input) : SV_TARGET
 {
+	///
+	float4 sandColor;
+	float4 slopeColor;
+	float slope;
+	float blend;
+	float4 textureColor = (0.0f, 0.0f, 0.0f, 1.0f);
+	///
 	float3 lightDir;
 	float lightIntensity;
 	float4 color;
-	float4 textureColor;
-	///
-	float slope;
-	float4 sandColor;
-	float4 slopeColor;
-	///
+
 
 	// Sample the textures
 	sandColor = sandTexture.Sample(SampleType, input.tex);
 	slopeColor = slopeTexture.Sample(SampleType, input.tex);
 
 	// Calculate the slope of this point.
-    slope = 1.0f - input.normal.y;
+    slope = 1.0f - input.normal.y; 
 
-	// Determine which texture to use based on the slope of the pixel.
-	if(slope > 0.9f)
+	if (slope >= 0.4)
 	{
 		textureColor = slopeColor;
 	}
-	else 
+	else if ((slope < 0.4) && (slope >0.2))
 	{
-		textureColor =  sandColor;
+		blend = (slope-0.2f) * (1.0f/(0.7 -0.2f));
+		textureColor = lerp(sandColor, slopeColor, blend);
+
 	}
-
-	//Determine which texture to use based on height.
-    //if(slope < 0.2)
-    //{
-    //    blendAmount = slope / 0.2f;
-	//    textureColor = lerp(grassColor, slopeColor, blendAmount);
-	//}
-	//
-	//if((slope < 0.7) && (slope >= 0.2f))
-	//{
-	//   blendAmount = (slope - 0.2f) * (1.0f / (0.7f - 0.2f));
-	//    textureColor = lerp(slopeColor, rockColor, blendAmount);
-	// }
-	//
-	// if(slope >= 0.7) 
-	// {
-	//     textureColor = rockColor;
-	// }
-
+	else
+	{
+		textureColor = sandColor;
+	}
 
    	// Set the default output color to the ambient light value for all pixels.
     color = ambientColor;
@@ -107,5 +95,5 @@ float4 TerrainPixelShader(PixelInputType input) : SV_TARGET
 	// Multiply the final colour by the texture colour
 	color = color * textureColor;
 
-    return color;
+	return color;
 }
