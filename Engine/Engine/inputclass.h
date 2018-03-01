@@ -52,7 +52,8 @@ public:
 	bool IsPgDownPressed();
 
 	///
-	bool ISXPressed();
+	bool IsXPressed();
+	bool IsCPressed();
 	///
 
 private:

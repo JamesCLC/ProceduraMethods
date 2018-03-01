@@ -3,6 +3,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
+// Slope Based Texturing code based on [http://www.rastertek.com/tertut14.html]
+
+
+// Slope Terrain Textures
+Texture2D sandTexture  : register(t0);
+Texture2D slopeTexture : register(t1);
 
 /////////////
 // GLOBALS //
@@ -24,6 +30,7 @@ cbuffer LightBuffer
 struct PixelInputType
 {
     float4 position : SV_POSITION;
+	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
 };
 
@@ -33,11 +40,41 @@ struct PixelInputType
 ////////////////////////////////////////////////////////////////////////////////
 float4 TerrainPixelShader(PixelInputType input) : SV_TARGET
 {
+	///
+	float4 sandColor;
+	float4 slopeColor;
+	float slope;
+	float blend;
+	float4 textureColor = (0.0f, 0.0f, 0.0f, 1.0f);
+	///
 	float3 lightDir;
 	float lightIntensity;
 	float4 color;
 
-	// Set the default output color to the ambient light value for all pixels.
+
+	// Sample the textures
+	sandColor = sandTexture.Sample(SampleType, input.tex);
+	slopeColor = slopeTexture.Sample(SampleType, input.tex);
+
+	// Calculate the slope of this point.
+    slope = 1.0f - input.normal.y; 
+
+	if (slope >= 0.4)
+	{
+		textureColor = slopeColor;
+	}
+	else if ((slope < 0.4) && (slope >0.2))
+	{
+		blend = (slope-0.2f) * (1.0f/(0.7 -0.2f));
+		textureColor = lerp(sandColor, slopeColor, blend);
+
+	}
+	else
+	{
+		textureColor = sandColor;
+	}
+
+   	// Set the default output color to the ambient light value for all pixels.
     color = ambientColor;
 
 	// Invert the light direction for calculations.
@@ -55,5 +92,8 @@ float4 TerrainPixelShader(PixelInputType input) : SV_TARGET
     // Saturate the final light color.
     color = saturate(color);
 
-    return color;
+	// Multiply the final colour by the texture colour
+	color = color * textureColor;
+
+	return color;
 }

@@ -4,6 +4,8 @@
 #include "terrainclass.h"
 #include <cmath>
 
+// http://www.rastertek.com/dx11ter03.html
+
 
 TerrainClass::TerrainClass()
 {
@@ -11,6 +13,12 @@ TerrainClass::TerrainClass()
 	m_indexBuffer = 0;
 	m_heightMap = 0;
 	m_terrainGeneratedToggle = false;
+
+	///
+	// My textures
+	m_SandTexture = 0;
+	m_SlopeTexture = 0;
+	///
 }
 
 
@@ -23,7 +31,8 @@ TerrainClass::~TerrainClass()
 {
 }
 
-bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight)
+
+bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* sandTexture, WCHAR* slopeTexture)
 {
 	int index;
 	float height = 0.0;
@@ -54,7 +63,6 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 		}
 	}
 
-
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.
 	result = CalculateNormals();
@@ -76,9 +84,40 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	{
 		return false;
 	}
+	
+	// Load the textures.
+	// Create the sand texture object.
+	m_SandTexture = new TextureClass;
+	if (!m_SandTexture)
+	{
+		return false;
+	}
+
+	// Initialize the sand texture object.
+	result = m_SandTexture->Initialize(device, sandTexture);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Create the slope texture object.
+	m_SlopeTexture = new TextureClass;
+	if (!m_SlopeTexture)
+	{
+		return false;
+	}
+
+	// Initialize the slope texture object.
+	result = m_SlopeTexture->Initialize(device, slopeTexture);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
+
+// Unused Initialise function that is mandated by the origional Rastertek framework.
 bool TerrainClass::Initialize(ID3D11Device* device, char* heightMapFilename)
 {
 	bool result;
@@ -128,6 +167,22 @@ void TerrainClass::Shutdown()
 		perlinNoise = nullptr;
 	}
 
+	// Release the sand texture.
+	if (m_SandTexture)
+	{
+		m_SandTexture->Shutdown();
+		delete m_SandTexture;
+		m_SandTexture = 0;
+	}
+
+	// Release the slope texture.
+	if (m_SlopeTexture)
+	{
+		m_SlopeTexture->Shutdown();
+		delete m_SlopeTexture;
+		m_SlopeTexture = 0;
+	}
+
 	return;
 }
 
@@ -146,6 +201,7 @@ int TerrainClass::GetIndexCount()
 	return m_indexCount;
 }
 
+
 bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 {
 
@@ -155,9 +211,6 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 	//times per second. 
 	if(keydown&&(!m_terrainGeneratedToggle))
 	{
-
-		//RandomHeightFeild();
-
 		ApplyPerlinNoise();
 
 		result = CalculateNormals();
@@ -447,6 +500,7 @@ void TerrainClass::ShutdownHeightMap()
 	return;
 }
 
+// A funtion that offets each vertex in the y-axis by a random value in a given range.
 void TerrainClass::RandomHeightFeild()
 {
 	// loop through the terrain and set the hieghts how we want.This is where we generate the terrain
@@ -470,6 +524,7 @@ void TerrainClass::RandomHeightFeild()
 	}
 }
 
+// A function that offsets each vertex in the y-axis by a value sampled from Ken Perlin's Improved Noise.
 void TerrainClass::ApplyPerlinNoise()
 {
 	int index;
@@ -482,12 +537,19 @@ void TerrainClass::ApplyPerlinNoise()
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 30;
 			m_heightMap[index].z = (float)j;
+			m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 30;
+
+			// Test - Form Plataues
+			if (m_heightMap[index].y > 10)
+			{
+				m_heightMap[index].y = perlinNoise->Sample((double)i * 0.1, (double)j *0.1, 0) * 10;
+			}
 		}
 	}
 }
 
+// A function that smooths the entire terrain indiscriminately
 bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 {
 	// We want to smooth out terrain so it looks less awful.
@@ -516,7 +578,7 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 				{
 					average += m_heightMap[index].y;
 				}
-				
+
 				index = (m_terrainHeight * j) + i - 1;
 				if (index < m_terrainHeight*m_terrainWidth && index > 0)
 				{
@@ -595,6 +657,187 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 	}
 }
 
+// A modified Smoothing function that targets the heightest points on the map.
+bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
+{
+	// We want to smooth out terrain so it looks less awful.
+	// This is done by taking each vertex, sampling the 8 surrounding vertecies,
+	// adding them together and then dividing by 8 (taking the average)
+	// Note: Need to make sure I don't sample off the edge of my terrain array, or it'ss go funky.
+	bool result;
+
+	if (keydown && (!m_terrainSmoothedToggle))
+	{
+
+		int index;
+		float height = 0.0;
+
+
+		for (int j = 0; j<m_terrainHeight; j++)
+		{
+			for (int i = 0; i<m_terrainWidth; i++)
+			{
+				// Add up all the surrounding vertecies.
+				index = (m_terrainHeight * (j - 1)) + i - 1;
+
+				if (m_heightMap[index].y > 1)
+				{
+					float average = 0.0f;
+
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * j) + i - 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i - 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * (j - 1)) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * (j - 1)) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * j) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					// Add on the centre vertex.
+					index = (m_terrainHeight * j) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						average += m_heightMap[index].y;
+					}
+
+					// Work out the average.
+					average = average / 9;
+
+					// Set the current vertex to the average value.
+					m_heightMap[index].y = average;
+					 
+					///
+					// Set the surrounding vertex to be the average? Perhaps the average between their current height and the overall average?
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * j) + i - 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i - 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j - 1)) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j - 1)) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * j) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * (j + 1)) + i + 1;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+
+					index = (m_terrainHeight * j) + i;
+					if (index < m_terrainHeight*m_terrainWidth && index > 0)
+					{
+						m_heightMap[index].y = (m_heightMap[index].y + average) / 2;
+					}
+					///
+
+				} // End if y>10
+			} // End loop
+		} // End Loop
+
+		result = CalculateNormals();
+		if (!result)
+		{
+			return false;
+		}
+
+		// Initialize the vertex and index buffer that hold the geometry for the terrain.
+		result = InitializeBuffers(device);
+		if (!result)
+		{
+			return false;
+		}
+
+		m_terrainSmoothedToggle = true;
+	}
+	else
+	{
+		m_terrainSmoothedToggle = false;
+	}
+}
+
+
+ID3D11ShaderResourceView * TerrainClass::GetSandTexture()
+{
+	return m_SandTexture->GetTexture();
+}
+
+
+ID3D11ShaderResourceView * TerrainClass::GetSlopeTexture()
+{
+	return m_SlopeTexture->GetTexture();
+}
+
+
 bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 {
 	VertexType* vertices;
@@ -641,36 +884,42 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 
 			// Upper left.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index3].x, m_heightMap[index3].y, m_heightMap[index3].z);
+			vertices[index].texture = D3DXVECTOR2(0.0f, 0.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
 			indices[index] = index;
 			index++;
 
 			// Upper right.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
+			vertices[index].texture = D3DXVECTOR2(1.0f, 0.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
+			vertices[index].texture = D3DXVECTOR2(0.0f, 1.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
+			vertices[index].texture = D3DXVECTOR2(0.0f, 1.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
 
 			// Upper right.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
+			vertices[index].texture = D3DXVECTOR2(1.0f, 0.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom right.
 			vertices[index].position = D3DXVECTOR3(m_heightMap[index2].x, m_heightMap[index2].y, m_heightMap[index2].z);
+			vertices[index].texture = D3DXVECTOR2(1.0f, 1.0f);
 			vertices[index].normal = D3DXVECTOR3(m_heightMap[index2].nx, m_heightMap[index2].ny, m_heightMap[index2].nz);
 			indices[index] = index;
 			index++;
