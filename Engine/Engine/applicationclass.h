@@ -29,6 +29,9 @@ const float SCREEN_NEAR = 0.1f;
 #include "textclass.h"
 #include "terrainshaderclass.h"
 #include "lightclass.h"
+///
+#include "modelclass.h"
+#include "textureshaderclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +65,8 @@ private:
 	TextClass* m_Text;
 	TerrainShaderClass* m_TerrainShader;
 	LightClass* m_Light;
+	ModelClass* m_Cube;
+	TextureShaderClass* m_TextureShader;
 };
 
 #endif

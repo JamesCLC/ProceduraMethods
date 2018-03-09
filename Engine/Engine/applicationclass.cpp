@@ -18,6 +18,8 @@ ApplicationClass::ApplicationClass()
 	m_Text = 0;
 	m_TerrainShader = 0;
 	m_Light = 0;
+	m_Cube = 0;
+	m_TextureShader = 0;
 }
 
 
@@ -40,7 +42,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	int videoMemory;
 
 	
-	// Create the input object.  The input object will be used to handle reading the keyboard and mouse input from the user.
+	// Create the input object. The input object will be used to handle reading the keyboard and mouse input from the user.
 	m_Input = new InputClass;
 	if(!m_Input)
 	{
@@ -215,9 +217,39 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	// Initialize the light object.
 	m_Light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
-	m_Light->SetDiffuseColor(0.5f, 0.5f, 0.5f, 1.0f);
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	m_Light->SetDirection(1.0f, -1.0f, 0.0f);
 
+	// Create the cube model
+	m_Cube = new ModelClass;
+	if (!m_Cube)
+	{
+		return false;
+	}
+
+	// Initialise the cube object.
+	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/seafloor.dds");
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the texture shader object.
+	m_TextureShader = new TextureShaderClass;
+	if (!m_TextureShader)
+	{
+		return false;
+	}
+
+	// Initialise the texture shader.
+	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		return false;
+	}
+	
 	return true;
 }
 
@@ -315,6 +347,22 @@ void ApplicationClass::Shutdown()
 		m_Input = 0;
 	}
 
+	// Release the cube object.
+	if (m_Cube)
+	{
+		m_Cube->Shutdown();
+		delete m_Cube;
+		m_Cube = 0;
+	}
+
+	// Release the texture shader object.
+	if (m_TextureShader)
+	{
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
+	}
+
 	return;
 }
 
@@ -392,10 +440,8 @@ bool ApplicationClass::HandleInput(float frameTime)
 	m_Terrain->SmoothTerrain(m_Direct3D->GetDevice(), keyDown);
 
 	if (keyDown = m_Input->IsCPressed())
-	{
-		m_Terrain->FlattenPeaks(m_Direct3D->GetDevice(), keyDown);
-	}
-	///
+	m_Terrain->FlattenPeaks(m_Direct3D->GetDevice(), keyDown);
+
 
 	keyDown = m_Input->IsLeftPressed();
 	m_Position->TurnLeft(keyDown);
@@ -470,12 +516,25 @@ bool ApplicationClass::RenderGraphics()
 
 	// Render the terrain using the terrain shader.
 	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
-									 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(), m_Terrain->GetSlopeTexture());
+									 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+									 m_Terrain->GetSlopeTexture());
 	if(!result)
 	{
 		return false;
 	}
 
+	// Render the model buffers.
+	m_Cube->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the cube using the texture shader.
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+
+	
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
 		

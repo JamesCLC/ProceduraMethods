@@ -4,7 +4,7 @@
 #include "terrainclass.h"
 #include <cmath>
 
-// http://www.rastertek.com/dx11ter03.html
+// UV code based on http://www.rastertek.com/dx11ter03.html
 
 
 TerrainClass::TerrainClass()
@@ -13,12 +13,9 @@ TerrainClass::TerrainClass()
 	m_indexBuffer = 0;
 	m_heightMap = 0;
 	m_terrainGeneratedToggle = false;
-
-	///
-	// My textures
 	m_SandTexture = 0;
 	m_SlopeTexture = 0;
-	///
+
 }
 
 
@@ -661,9 +658,8 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
 {
 	// We want to smooth out terrain so it looks less awful.
-	// This is done by taking each vertex, sampling the 8 surrounding vertecies,
-	// adding them together and then dividing by 8 (taking the average)
-	// Note: Need to make sure I don't sample off the edge of my terrain array, or it'ss go funky.
+	// This is done by taking each vertex, sampling the 8 surrounding vertecies, and taking the average.
+
 	bool result;
 
 	if (keydown && (!m_terrainSmoothedToggle))
