@@ -527,7 +527,7 @@ bool ApplicationClass::RenderGraphics()
 	m_Cube->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
 	if (!result)
 	{
 		return false;
