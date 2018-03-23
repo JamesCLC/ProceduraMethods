@@ -156,19 +156,16 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	}
 
 	// Load the instance array with data.
+	// Set Root Location.
 	instances[0].position = D3DXVECTOR3(-1.5f, -1.5f, 5.0f);
-	instances[1].position = D3DXVECTOR3(-1.5f,  1.5f, 5.0f);
-	instances[2].position = D3DXVECTOR3( 1.5f, -1.5f, 5.0f);
-	instances[3].position = D3DXVECTOR3( 1.5f,  1.5f, 5.0f);
+	instances[0].rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
-	instances[4].position = D3DXVECTOR3(-2.5f, -2.5f, 5.0f);
-	instances[5].position = D3DXVECTOR3(-2.5f, 2.5f, 5.0f);
-	instances[6].position = D3DXVECTOR3(2.5f, -2.5f, 5.0f);
-	instances[7].position = D3DXVECTOR3(2.5f, 2.5f, 5.0f);
-
-	instances[8].position = D3DXVECTOR3(-3.5f, -3.5f, 5.0f);
-	instances[9].position = D3DXVECTOR3(-3.5f, 3.5f, 5.0f);
-
+	// Create other geometry instances based off of this.
+	for (int i = 0; i < 9; i++)
+	{
+		instances[i].position = D3DXVECTOR3(instances[i - 1].position.x + 3.0f, instances[i - 1].position.y, instances[i - 1].position.z);
+		instances[i].rotation = D3DXVECTOR3(instances[i - 1].rotation.x + 30.0f, instances[i - 1].rotation.y, instances[i - 1].rotation.z);
+	}
 
 	// Set up the description of the static instance buffer.
 	instanceBufferDesc.Usage = D3D11_USAGE_DEFAULT;

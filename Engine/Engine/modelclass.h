@@ -4,7 +4,8 @@
 #ifndef _MODELCLASS_H_
 #define _MODELCLASS_H_
 
-// http://www.rastertek.com/dx11tut07.html
+// Instancing Code based on - http://www.rastertek.com/dx11tut37.html
+// Model Loading/Rendering Code based on - http://www.rastertek.com/dx11tut07.html
 
 //////////////
 // INCLUDES //
@@ -38,6 +39,7 @@ private:
 	struct InstanceType
 	{
 		D3DXVECTOR3 position;
+		D3DXVECTOR3 rotation;
 	};
 	///
 
