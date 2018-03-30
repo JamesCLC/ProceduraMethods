@@ -74,7 +74,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	ID3D10Blob* errorMessage;
 	ID3D10Blob* vertexShaderBuffer;
 	ID3D10Blob* pixelShaderBuffer;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[4];
+	D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
 	unsigned int numElements;
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -162,15 +162,6 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	polygonLayout[2].AlignedByteOffset = 0;
 	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
 	polygonLayout[2].InstanceDataStepRate = 1;
-
-	// Create the instance input layout description. This uses a generic "TEXCOORD" semantic.
-	polygonLayout[3].SemanticName = "TEXCOORD";
-	polygonLayout[3].SemanticIndex = 2;
-	polygonLayout[3].Format = DXGI_FORMAT_R32G32_FLOAT;
-	polygonLayout[3].InputSlot = 2;
-	polygonLayout[3].AlignedByteOffset = 0;
-	polygonLayout[3].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
-	polygonLayout[3].InstanceDataStepRate = 2;
 
 	// Get a count of the elements in the layout.
     numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);

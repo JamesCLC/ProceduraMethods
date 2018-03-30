@@ -38,8 +38,7 @@ private:
 	///
 	struct InstanceType
 	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR3 rotation;
+		D3DXMATRIX transform;
 	};
 	///
 

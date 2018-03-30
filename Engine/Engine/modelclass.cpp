@@ -101,6 +101,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
     D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 	HRESULT result;
 	int i;
+	D3DXMATRIX m_translate, m_rotate, m_transform;
 
 
 	// Create the vertex array.
@@ -110,14 +111,11 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-
 	// Load the vertex array and index array with data.
 	for(i=0; i<m_vertexCount; i++)
 	{
 		vertices[i].position = D3DXVECTOR3(m_model[i].x, m_model[i].y, m_model[i].z);
 		vertices[i].texture = D3DXVECTOR2(m_model[i].tu, m_model[i].tv);
-
-		//indices[i] = i;
 	}
 
 	// Set up the description of the static vertex buffer.
@@ -157,15 +155,29 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// Load the instance array with data.
 	// Set Root Location.
-	instances[0].position = D3DXVECTOR3(-1.5f, -1.5f, 5.0f);
-	instances[0].rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	//instances[0].position = D3DXVECTOR3(-1.5f, -1.5f, 5.0f);
+	//instances[0].rotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	//// Create other geometry instances based off of this.
+	//for (int i = 0; i < 9; i++)
+	//{
+	//	instances[i].position = D3DXVECTOR3(instances[i - 1].position.x + 3.0f, instances[i - 1].position.y, instances[i - 1].position.z);
+	//	instances[i].rotation = D3DXVECTOR3(instances[i - 1].rotation.x + 30.0f, instances[i - 1].rotation.y, instances[i - 1].rotation.z);
+	//}
 
-	// Create other geometry instances based off of this.
-	for (int i = 0; i < 9; i++)
+	// Load the instance array with data.
+	// Set the location of the Root	
+	for (int i = 0; i < 10; i++)
 	{
-		instances[i].position = D3DXVECTOR3(instances[i - 1].position.x + 3.0f, instances[i - 1].position.y, instances[i - 1].position.z);
-		instances[i].rotation = D3DXVECTOR3(instances[i - 1].rotation.x + 30.0f, instances[i - 1].rotation.y, instances[i - 1].rotation.z);
+
+		D3DXMatrixTranslation(&m_translate, i * 2.0f, 0.0f, 0.0f);
+
+		D3DXMatrixRotationX(&m_rotate, i * 10.0f);
+
+		D3DXMatrixMultiply(&m_transform, &m_rotate, &m_translate);
+
+		instances[i].transform = m_transform;
 	}
+	
 
 	// Set up the description of the static instance buffer.
 	instanceBufferDesc.Usage = D3D11_USAGE_DEFAULT;
