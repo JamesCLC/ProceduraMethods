@@ -74,7 +74,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	ID3D10Blob* errorMessage;
 	ID3D10Blob* vertexShaderBuffer;
 	ID3D10Blob* pixelShaderBuffer;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
+	D3D11_INPUT_ELEMENT_DESC polygonLayout[7];
 	unsigned int numElements;
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -154,14 +154,54 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	polygonLayout[1].InstanceDataStepRate = 0;
 
-	// Create the instance input layout description. This uses a generic "TEXCOORD" semantic.
-	polygonLayout[2].SemanticName = "TEXCOORD";
-	polygonLayout[2].SemanticIndex = 1;
-	polygonLayout[2].Format = DXGI_FORMAT_R32G32_FLOAT;
-	polygonLayout[2].InputSlot = 1;
-	polygonLayout[2].AlignedByteOffset = 0;
-	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
-	polygonLayout[2].InstanceDataStepRate = 1;
+	// Add in Normals here
+	polygonLayout[2].SemanticName = "NORMAL";
+	polygonLayout[2].SemanticIndex = 0;
+	polygonLayout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	polygonLayout[2].InputSlot = 0;
+	polygonLayout[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	polygonLayout[2].InstanceDataStepRate = 0;
+	
+
+	// Create the instance input layout description. This uses a generic "TEXCOORD" semantic for each of the four rows of a matrix.
+	// Row 1
+	polygonLayout[3].SemanticName = "INSTANCE";
+	polygonLayout[3].SemanticIndex = 0;
+	polygonLayout[3].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;		// Handle 4 floats for out 4X4 Matrix.
+	polygonLayout[3].InputSlot = 1;
+	polygonLayout[3].AlignedByteOffset = 0;
+	polygonLayout[3].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+	polygonLayout[3].InstanceDataStepRate = 1;
+
+	// Row 2
+	polygonLayout[4].SemanticName = "INSTANCE";
+	polygonLayout[4].SemanticIndex = 1;
+	polygonLayout[4].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	polygonLayout[4].InputSlot = 1;
+	polygonLayout[4].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[4].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+	polygonLayout[4].InstanceDataStepRate = 1;
+
+	// Row 3
+	polygonLayout[5].SemanticName = "INSTANCE";
+	polygonLayout[5].SemanticIndex = 2;
+	polygonLayout[5].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	polygonLayout[5].InputSlot = 1;
+	polygonLayout[5].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[5].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+	polygonLayout[5].InstanceDataStepRate = 1;
+
+	// Row 4
+	polygonLayout[6].SemanticName = "INSTANCE";
+	polygonLayout[6].SemanticIndex = 3;
+	polygonLayout[6].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	polygonLayout[6].InputSlot = 1;
+	polygonLayout[6].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[6].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+	polygonLayout[6].InstanceDataStepRate = 1;
+
+	// NOTE: Be wary. from the post: "Although this will only work if your instance vertex buffer is bound at slot 1."
 
 	// Get a count of the elements in the layout.
     numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);

@@ -166,15 +166,20 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// Load the instance array with data.
 	// Set the location of the Root	
+
+
 	for (int i = 0; i < 10; i++)
 	{
-
+		// Translate in world space
 		D3DXMatrixTranslation(&m_translate, i * 2.0f, 0.0f, 0.0f);
 
+		// Apply a rotation
 		D3DXMatrixRotationX(&m_rotate, i * 10.0f);
 
+		// Combine into a single transform (rotate then translate.)
 		D3DXMatrixMultiply(&m_transform, &m_rotate, &m_translate);
 
+		// Update this model's instance buffer.
 		instances[i].transform = m_transform;
 	}
 	
