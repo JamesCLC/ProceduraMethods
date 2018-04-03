@@ -35,12 +35,10 @@ private:
 		D3DXVECTOR3 normal;
 	};
 
-	///
 	struct InstanceType
 	{
 		D3DXMATRIX transform;
 	};
-	///
 
 	struct ModelType
 	{

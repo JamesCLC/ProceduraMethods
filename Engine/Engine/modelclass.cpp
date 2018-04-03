@@ -100,8 +100,11 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
     D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 	HRESULT result;
-	int i;
 	D3DXMATRIX m_translate, m_rotate, m_transform;
+
+	D3DXMatrixIdentity(&m_translate);
+	D3DXMatrixIdentity(&m_rotate);
+	D3DXMatrixIdentity(&m_transform);
 
 
 	// Create the vertex array.
@@ -112,7 +115,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	}
 
 	// Load the vertex array and index array with data.
-	for(i=0; i<m_vertexCount; i++)
+	for(int i=0; i<m_vertexCount; i++)
 	{
 		vertices[i].position = D3DXVECTOR3(m_model[i].x, m_model[i].y, m_model[i].z);
 		vertices[i].texture = D3DXVECTOR2(m_model[i].tu, m_model[i].tv);
@@ -144,7 +147,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	//////////////////////////////////////////////////////////////////////
 	// Set the number of instanes in the array.
-	m_instanceCount = 10;
+	m_instanceCount = 2;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -164,23 +167,29 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	//	instances[i].rotation = D3DXVECTOR3(instances[i - 1].rotation.x + 30.0f, instances[i - 1].rotation.y, instances[i - 1].rotation.z);
 	//}
 
+	///////////////////////////////////////////////////////////
+	// This is likely where I'll need to tie in my L-System. //
+	///////////////////////////////////////////////////////////
+
 	// Load the instance array with data.
 	// Set the location of the Root	
 
-
-	for (int i = 0; i < 10; i++)
+	for (int j = 0; j < m_instanceCount; j++)
 	{
 		// Translate in world space
-		D3DXMatrixTranslation(&m_translate, i * 2.0f, 0.0f, 0.0f);
+		D3DXMatrixTranslation(&m_translate, j* 2.0f, 0.0f, 0.0f);
 
 		// Apply a rotation
-		D3DXMatrixRotationX(&m_rotate, i * 10.0f);
+		D3DXMatrixRotationX(&m_rotate, j * 10.0f);
 
 		// Combine into a single transform (rotate then translate.)
 		D3DXMatrixMultiply(&m_transform, &m_rotate, &m_translate);
 
 		// Update this model's instance buffer.
-		instances[i].transform = m_transform;
+		instances[j].transform = m_transform;
+
+
+		int k = 0;
 	}
 	
 

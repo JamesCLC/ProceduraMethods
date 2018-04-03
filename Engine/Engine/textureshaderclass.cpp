@@ -166,7 +166,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 
 	// Create the instance input layout description. This uses a generic "TEXCOORD" semantic for each of the four rows of a matrix.
 	// Row 1
-	polygonLayout[3].SemanticName = "INSTANCE";
+	polygonLayout[3].SemanticName = "MATRIX";
 	polygonLayout[3].SemanticIndex = 0;
 	polygonLayout[3].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;		// Handle 4 floats for out 4X4 Matrix.
 	polygonLayout[3].InputSlot = 1;
@@ -175,7 +175,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	polygonLayout[3].InstanceDataStepRate = 1;
 
 	// Row 2
-	polygonLayout[4].SemanticName = "INSTANCE";
+	polygonLayout[4].SemanticName = "MATRIX";
 	polygonLayout[4].SemanticIndex = 1;
 	polygonLayout[4].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	polygonLayout[4].InputSlot = 1;
@@ -184,7 +184,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	polygonLayout[4].InstanceDataStepRate = 1;
 
 	// Row 3
-	polygonLayout[5].SemanticName = "INSTANCE";
+	polygonLayout[5].SemanticName = "MATRIX";
 	polygonLayout[5].SemanticIndex = 2;
 	polygonLayout[5].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	polygonLayout[5].InputSlot = 1;
@@ -193,7 +193,7 @@ bool TextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR
 	polygonLayout[5].InstanceDataStepRate = 1;
 
 	// Row 4
-	polygonLayout[6].SemanticName = "INSTANCE";
+	polygonLayout[6].SemanticName = "MATRIX";
 	polygonLayout[6].SemanticIndex = 3;
 	polygonLayout[6].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	polygonLayout[6].InputSlot = 1;

@@ -1,0 +1,31 @@
+It's going to be fine - there's plenty of time left for this coursework.
+
+Pause, Process, Plan, Prioritise, Proceed.
+
+Pause - What's the issue?
+
+	The cubes are being stretched to infinity. 
+	
+
+Process - What are the likely causes?
+
+	Chances are, this means that 
+	the information getting used to transform the cubes is either far higher than I expect,
+	or invalid information is being accessed (possibly due to my use of pointers.)
+
+Plan - How can I go about trying to fix this?
+
+	a) Scale back to one cube. ?
+	1) Make sure sensible data is being loaded into the Index Buffer. ?
+	2) Make sure this data is being sensible applied to each vertex. ?
+	3) Double-check vertex input stuff to make sure that's right.
+	4)
+
+Prioritise - Which approach should I try next?
+	- 
+
+Proceed - Go through each plan until they are exhasuted, I am exhausted, or a solution is reached.
+
+	The Matrix infromation getting packed into Index Buffer seems to be fine. The data is identicle from one instance to another,
+	and the values don't seem to be terribly unreasonable.
+	
