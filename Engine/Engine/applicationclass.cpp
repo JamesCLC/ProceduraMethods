@@ -534,7 +534,9 @@ bool ApplicationClass::RenderGraphics()
 	}
 
 
-	
+
+
+
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
 		

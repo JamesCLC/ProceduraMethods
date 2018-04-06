@@ -100,8 +100,18 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
     D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 	HRESULT result;
-	int i;
+	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_transform;
 
+	// For Matrix Decomposition Debuggind
+	D3DXVECTOR3    pOutScale;
+	D3DXQUATERNION pOutRotation;
+	D3DXVECTOR3    pOutTranslation;
+
+	// Initialise matricies to the Indentiy Matrix.
+	D3DXMatrixIdentity(&m_translate_1);
+	D3DXMatrixIdentity(&m_translate_2);
+	D3DXMatrixIdentity(&m_rotate);
+	D3DXMatrixIdentity(&m_transform);
 
 	// Create the vertex array.
 	vertices = new VertexType[m_vertexCount];
@@ -110,14 +120,11 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-
 	// Load the vertex array and index array with data.
-	for(i=0; i<m_vertexCount; i++)
+	for(int i=0; i<m_vertexCount; i++)
 	{
 		vertices[i].position = D3DXVECTOR3(m_model[i].x, m_model[i].y, m_model[i].z);
 		vertices[i].texture = D3DXVECTOR2(m_model[i].tu, m_model[i].tv);
-
-		//indices[i] = i;
 	}
 
 	// Set up the description of the static vertex buffer.
@@ -144,7 +151,6 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	delete[] vertices;
 	vertices = 0;
 
-	//////////////////////////////////////////////////////////////////////
 	// Set the number of instanes in the array.
 	m_instanceCount = 10;
 
@@ -155,20 +161,78 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-	// Load the instance array with data.
-	instances[0].position = D3DXVECTOR3(-1.5f, -1.5f, 5.0f);
-	instances[1].position = D3DXVECTOR3(-1.5f,  1.5f, 5.0f);
-	instances[2].position = D3DXVECTOR3( 1.5f, -1.5f, 5.0f);
-	instances[3].position = D3DXVECTOR3( 1.5f,  1.5f, 5.0f);
+	///////////////////////////////////////////////////////////
+	// This is likely where I'll need to tie in my L-System. //
+	///////////////////////////////////////////////////////////
 
-	instances[4].position = D3DXVECTOR3(-2.5f, -2.5f, 5.0f);
-	instances[5].position = D3DXVECTOR3(-2.5f, 2.5f, 5.0f);
-	instances[6].position = D3DXVECTOR3(2.5f, -2.5f, 5.0f);
-	instances[7].position = D3DXVECTOR3(2.5f, 2.5f, 5.0f);
+	///// Load the instance array with data.
+	//// Set a Root location (At the origin using an Identity Matrix.)
+	//instances[0].transform = m_transform;
+	//// Create a 30 Degree Rotation Matrix (rotation is in radians)
+	//D3DXMatrixRotationX(&m_rotate, 0.523599f);
+	//// Create a Translation Matrix (moves out one cube's width, 2.0f.)
+	//D3DXMatrixTranslation(&m_translate, 0.0f, 2.0f, 0.0f);
+	//// Define the remaining instances based on the root.
+	//for (int j = 1; j < m_instanceCount; j++)
+	//{
+	//	/////////////////////////////////////////////////////////////
+	//	// Translate
+	//	D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate);
+	//	// Rotate
+	//	D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+	//	// Translate
+	//	D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate);
+	//	///////////////////////////////////////////////////////////////
+	//	D3DXMatrixMultiply(&m_transform, &instances[j - 1].transform, &m_transform);
+	//	/////////////////////////////////////////////////////////////////////////
+	//	// Erin's Advice - Decompose my marticies here to make sure they're ok //
+	//	/////////////////////////////////////////////////////////////////////////
+	//	// Update this model's instance buffer.
+	//	instances[j].transform = m_transform;
+	//}
 
-	instances[8].position = D3DXVECTOR3(-3.5f, -3.5f, 5.0f);
-	instances[9].position = D3DXVECTOR3(-3.5f, 3.5f, 5.0f);
 
+	// Set a Root location (At the origin using an Identity Matrix.)
+	instances[0].transform = m_transform;
+
+	// Translate - Ensure Rotation around the edge, not the centre.
+	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);
+
+	// Rotate 0.523599 Radians (30 Degrees.)
+	D3DXMatrixRotationX(&m_rotate, 0.523599f);
+
+	// Translate - One Cube's Width so the cubes move out and don't overlap.
+	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);
+
+	// Define the remaining instances based on the root.
+	for (int j = 1; j < m_instanceCount; j++)
+	{
+		/////////////////////////////////////////////////////////////
+		// Reset the Transformation Matrix.
+		D3DXMatrixIdentity(&m_transform);
+
+		// Translate - Ensure Rotation around the edge, not the centre.
+		D3DXMatrixMultiply(&m_transform, &m_translate_1, &m_transform);
+
+		// Rotate 0.523599 Radians (30 Degrees.)
+		D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+
+		// Translate - One Cube's Width so the cubes move out and don't overlap.
+		D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
+		///////////////////////////////////////////////////////////////
+
+		// Apply these transforms to the matrix of the previous instance.
+		D3DXMatrixMultiply(&m_transform, &m_transform, &instances[j - 1].transform);
+
+		// Update this model's instance buffer.
+		instances[j].transform = m_transform;
+
+		// Erin's Advice - Decompose my marticies here to make sure they're ok.
+		D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
+
+		// Throwaway code for debugging.
+		int foo = 0;
+	}
 
 	// Set up the description of the static instance buffer.
 	instanceBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -240,12 +304,10 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	deviceContext->IASetVertexBuffers(0, 2, &m_vertexBuffer, strides, offsets);
 
-    // Set the index buffer to active in the input assembler so it can be rendered.
-	//deviceContext->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	/////////////////////////////////////////////////////////////////////////////////
-	// WANNA PUT THIS SHIT ON THE GPU? I MIGHT NEED TO CHAGE THIS SHIT RIGHT HERE! //
-	/////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	// Migrating to the GPU may require me to change things here. //
+	////////////////////////////////////////////////////////////////
 
     // Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
