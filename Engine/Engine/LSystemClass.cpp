@@ -31,3 +31,14 @@ void LSystemClass::Generate()
 	}
 	axiom.swap(temp);
 }
+
+void LSystemClass::ShutDown()
+{
+	axiom.clear();
+	temp.clear();
+}
+
+std::string LSystemClass::GetAxiom()
+{
+	return axiom;
+}

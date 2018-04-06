@@ -14,7 +14,6 @@ public:
 
 	std::string GetAxiom();
 
-
 private:
 	std::string axiom;
 	std::string temp;

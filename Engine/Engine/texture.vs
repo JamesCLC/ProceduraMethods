@@ -44,6 +44,7 @@ PixelInputType TextureVertexShader(VertexInputType input)
 
 	// Calculate the position of the vertex against the instance, world, view, and projection matrices.
 	///
+	// row_major
 	output.position = mul(input.instance, input.position);
 	///
     output.position = mul(output.position, worldMatrix);

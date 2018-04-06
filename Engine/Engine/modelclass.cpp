@@ -100,10 +100,16 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
     D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 	HRESULT result;
-	D3DXMATRIX m_translate, m_rotate, m_transform;
+	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_transform;
+
+	// For Matrix Decomposition Debuggind
+	D3DXVECTOR3    pOutScale;
+	D3DXQUATERNION pOutRotation;
+	D3DXVECTOR3    pOutTranslation;
 
 	// Initialise matricies to the Indentiy Matrix.
-	D3DXMatrixIdentity(&m_translate);
+	D3DXMatrixIdentity(&m_translate_1);
+	D3DXMatrixIdentity(&m_translate_2);
 	D3DXMatrixIdentity(&m_rotate);
 	D3DXMatrixIdentity(&m_transform);
 
@@ -159,29 +165,74 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// This is likely where I'll need to tie in my L-System. //
 	///////////////////////////////////////////////////////////
 
-	/// Load the instance array with data.
-	// Set the location of the Root
+	///// Load the instance array with data.
+	//// Set a Root location (At the origin using an Identity Matrix.)
+	//instances[0].transform = m_transform;
+	//// Create a 30 Degree Rotation Matrix (rotation is in radians)
+	//D3DXMatrixRotationX(&m_rotate, 0.523599f);
+	//// Create a Translation Matrix (moves out one cube's width, 2.0f.)
+	//D3DXMatrixTranslation(&m_translate, 0.0f, 2.0f, 0.0f);
+	//// Define the remaining instances based on the root.
+	//for (int j = 1; j < m_instanceCount; j++)
+	//{
+	//	/////////////////////////////////////////////////////////////
+	//	// Translate
+	//	D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate);
+	//	// Rotate
+	//	D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+	//	// Translate
+	//	D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate);
+	//	///////////////////////////////////////////////////////////////
+	//	D3DXMatrixMultiply(&m_transform, &instances[j - 1].transform, &m_transform);
+	//	/////////////////////////////////////////////////////////////////////////
+	//	// Erin's Advice - Decompose my marticies here to make sure they're ok //
+	//	/////////////////////////////////////////////////////////////////////////
+	//	// Update this model's instance buffer.
+	//	instances[j].transform = m_transform;
+	//}
+
+
+	// Set a Root location (At the origin using an Identity Matrix.)
 	instances[0].transform = m_transform;
+
+	// Translate - Ensure Rotation around the edge, not the centre.
+	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);
+
+	// Rotate 0.523599 Radians (30 Degrees.)
+	D3DXMatrixRotationX(&m_rotate, 0.523599f);
+
+	// Translate - One Cube's Width so the cubes move out and don't overlap.
+	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);
 
 	// Define the remaining instances based on the root.
 	for (int j = 1; j < m_instanceCount; j++)
 	{
-		// Create a Rotation Matrix (rotates 30 degrees, 30.0f.)
-		D3DXMatrixRotationX(&m_rotate, 30.0f);
+		/////////////////////////////////////////////////////////////
+		// Reset the Transformation Matrix.
+		D3DXMatrixIdentity(&m_transform);
 
-		// Create a Translation Matrix (moves out one cube's width, 2.0f.)
-		D3DXMatrixTranslation(&m_translate, 0.0f, 2.0f, 0.0f);
+		// Translate - Ensure Rotation around the edge, not the centre.
+		D3DXMatrixMultiply(&m_transform, &m_translate_1, &m_transform);
 
-		// Apply that Rotation to the transform of the previous cube.
-		D3DXMatrixMultiply(&m_transform, &m_rotate, &instances[j - 1].transform);
+		// Rotate 0.523599 Radians (30 Degrees.)
+		D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
 
-		// Translate out one cube's width at the specified angle.
-		D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate);
+		// Translate - One Cube's Width so the cubes move out and don't overlap.
+		D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
+		///////////////////////////////////////////////////////////////
+
+		// Apply these transforms to the matrix of the previous instance.
+		D3DXMatrixMultiply(&m_transform, &m_transform, &instances[j - 1].transform);
 
 		// Update this model's instance buffer.
 		instances[j].transform = m_transform;
+
+		// Erin's Advice - Decompose my marticies here to make sure they're ok.
+		D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
+
+		// Throwaway code for debugging.
+		int foo = 0;
 	}
-	
 
 	// Set up the description of the static instance buffer.
 	instanceBufferDesc.Usage = D3D11_USAGE_DEFAULT;
