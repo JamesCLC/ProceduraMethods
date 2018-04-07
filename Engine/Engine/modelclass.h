@@ -74,7 +74,7 @@ private:
 	bool LoadModel(char*);
 	void ReleaseModel();
 
-	void ParseAxiom(InstanceType[]);
+	void ParseAxiom(InstanceType[], int);
 
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_instanceBuffer;

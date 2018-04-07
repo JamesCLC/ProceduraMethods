@@ -124,18 +124,6 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	D3D11_BUFFER_DESC vertexBufferDesc, instanceBufferDesc;
     D3D11_SUBRESOURCE_DATA vertexData, instanceData;
 	HRESULT result;
-	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_transform;
-
-	// For Matrix Decomposition Debuggind
-	D3DXVECTOR3    pOutScale;
-	D3DXQUATERNION pOutRotation;
-	D3DXVECTOR3    pOutTranslation;
-
-	// Initialise matricies to the Indentiy Matrix.
-	D3DXMatrixIdentity(&m_translate_1);
-	D3DXMatrixIdentity(&m_translate_2);
-	D3DXMatrixIdentity(&m_rotate);
-	D3DXMatrixIdentity(&m_transform);
 
 	// Create the vertex array.
 	vertices = new VertexType[m_vertexCount];
@@ -193,44 +181,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// For multiple cacti, I'll need to swap this out for a location relative to the terrain. //
 	////////////////////////////////////////////////////////////////////////////////////////////
 
-	// Set a Root location (At the origin using an Identity Matrix.)
-	instances[0].transform = m_transform;
-
-	// Translate - Ensure Rotation around the edge, not the centre.
-	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);
-
-	// Rotate 10 Degrees (In radians.)
-	D3DXMatrixRotationX(&m_rotate, 0.174533f);
-
-	// Translate - One Cube's Width so the cubes move out and don't overlap.
-	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);
-
-	// Define the remaining instances based on the root.
-	for (int j = 1; j < m_instanceCount; j++)
-	{
-		// Reset the Transformation Matrix.
-		D3DXMatrixIdentity(&m_transform);
-
-		// Translate - Ensure Rotation around the edge, not the centre.
-		D3DXMatrixMultiply(&m_transform, &m_translate_1, &m_transform);
-
-		// Rotate 0.523599 Radians (30 Degrees.)
-		D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
-
-		// Translate - One Cube's Width so the cubes move out and don't overlap.
-		D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
-
-		// Apply these transforms to the matrix of the previous instance.
-		D3DXMatrixMultiply(&m_transform, &m_transform, &instances[j - 1].transform);
-
-		// Update this model's instance buffer.
-		instances[j].transform = m_transform;
-
-		// Erin's Advice - Decompose my marticies here to make sure they're ok.
-		D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
-	}
-
-	ParseAxiom(instances);
+	ParseAxiom(instances, m_instanceCount);
 
 	// Set up the description of the static instance buffer.
 	instanceBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -420,38 +371,88 @@ void ModelClass::ReleaseModel()
 	return;
 }
 
-void ModelClass::ParseAxiom(InstanceType instances[])
+void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 {
-	// Make sure there's enough data in the axiom.
-	if (axiom.length() >= sizeof(instances))
+	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_transform;
+
+	// Initialise matricies to the Indentiy Matrix.
+	D3DXMatrixIdentity(&m_translate_1);
+	D3DXMatrixIdentity(&m_translate_2);
+	D3DXMatrixIdentity(&m_rotate);
+	D3DXMatrixIdentity(&m_transform);
+
+	// For Matrix Decomposition Debuggind
+	D3DXVECTOR3    pOutScale;
+	D3DXQUATERNION pOutRotation;
+	D3DXVECTOR3    pOutTranslation;
+
+	// Set a Root location (At the origin using an Identity Matrix.)
+	instances[0].transform = m_transform;
+
+	// Translate - Ensure Rotation around the edge, not the centre.
+	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);
+
+	// Rotate 10 Degrees (In radians.)
+	D3DXMatrixRotationX(&m_rotate, 0.174533f);
+
+	// Translate - One Cube's Width so the cubes move out and don't overlap.
+	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);
+
+	// Define the remaining instances based on the root.
+	for (int j = 1; j < m_instanceCount; j++)
 	{
+		// Reset the Transformation Matrix.
+		D3DXMatrixIdentity(&m_transform);
+
+		// Translate - Ensure Rotation around the edge, not the centre.
+		D3DXMatrixMultiply(&m_transform, &m_translate_1, &m_transform);
+
+		// Rotate 0.523599 Radians (30 Degrees.)
+		D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+
+		// Translate - One Cube's Width so the cubes move out and don't overlap.
+		D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
+
+		// Apply these transforms to the matrix of the previous instance.
+		D3DXMatrixMultiply(&m_transform, &m_transform, &instances[j - 1].transform);
+
+		// Update this model's instance buffer.
+		instances[j].transform = m_transform;
+
+		// Erin's Advice - Decompose my marticies here to make sure they're ok.
+		D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
+	}
+
+	// Make sure there's enough data in the axiom.
+	//if (axiom.length() >= sizeof(instances))
+	//{
 		// Initialise the Matricies we'll be using to manipulate our cactus.
 	
 
-		for (unsigned i = 0; i<axiom.length(); ++i)
-		{
-			if (axiom.at(i) == 'F')
-			{
-				// Move the Matrix forward.
-			}
-			else if (axiom.at(i) == '+')
-			{
-				// Rotate the Matrix in the positive direction.
-			}
-			else if (axiom.at(i) == '-')
-			{
-				// Rotate the Matrix in the negative direction.
-			}
-			else if (axiom.at(i) == '[')
-			{
-				// Begin a branch.
-				// Push the current matrix onto the stack.
-			}
-			else if (axiom.at(i) == ']')
-			{
-				// End a branch.
-				// Pop the current matrix off the stack.
-			}
-		}
-	}
+		//for (unsigned i = 0; i<axiom.length(); ++i)
+		//{
+		//	if (axiom.at(i) == 'F')
+		//	{
+		//		// Move the Matrix forward.
+		//	}
+		//	else if (axiom.at(i) == '+')
+		//	{
+		//		// Rotate the Matrix in the positive direction.
+		//	}
+		//	else if (axiom.at(i) == '-')
+		//	{
+		//		// Rotate the Matrix in the negative direction.
+		//	}
+		//	else if (axiom.at(i) == '[')
+		//	{
+		//		// Begin a branch.
+		//		// Push the current matrix onto the stack.
+		//	}
+		//	else if (axiom.at(i) == ']')
+		//	{
+		//		// End a branch.
+		//		// Pop the current matrix off the stack.
+		//	}
+		//}
+	//}
 }
