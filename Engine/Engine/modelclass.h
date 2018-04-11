@@ -13,6 +13,10 @@
 #include <d3d11.h>
 #include <d3dx10math.h>
 #include <fstream>
+#include "LSystemClass.h"
+#include <vector>
+#include <stack>
+
 using namespace std;
 
 
@@ -72,11 +76,18 @@ private:
 	bool LoadModel(char*);
 	void ReleaseModel();
 
+	void ParseAxiom(InstanceType[], int);
+
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_instanceBuffer;
 	int m_vertexCount, m_instanceCount;
 	TextureClass* m_Texture;
 	ModelType* m_model;
+
+	///
+	LSystemClass* LSystem;
+	std::string axiom;
+	///
 };
 
 #endif

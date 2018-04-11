@@ -1,0 +1,20 @@
+1) What am I trying to acheive?
+
+	I'm trying to convert my Axiom to Matrix Transforms.
+
+2) What methods can I use to acheive this?
+	
+	a) In the model.cpp, I can call LSystem.Parse() for each member of the instances array.
+	b) I can try to pass the array to the LSystem and fill it up there.
+	c) I can put the rules for Parsing my L-System into the model.cpp and just use GetAxiom().
+
+3) What are the benefits/drawbacks of each?
+
+	a) Performance overhead of function calling. Would become more significant as I expand the system.
+	b) I'd need the LSystem to know what InstanceType is, so that Parse can accept a pointer to one.
+		=> Could I use some pointer fuckery to do this?
+	c) This is kinda messy, but would work.
+
+4) Which one is my best bet?
+
+	c) Is definitely the easiest. I'll start here, and try to get b) working for optimisation later.

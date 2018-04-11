@@ -9,7 +9,8 @@ public:
 	LSystemClass(std::string);
 	~LSystemClass();
 
-	void Generate();
+	void Generate(int);
+	void Parse(int);
 	void ShutDown();
 
 	std::string GetAxiom();
