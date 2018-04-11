@@ -14,6 +14,8 @@
 #include <d3dx10math.h>
 #include <fstream>
 #include "LSystemClass.h"
+#include <vector>
+#include <stack>
 
 using namespace std;
 

@@ -36,6 +36,19 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 		return false;
 	}
 
+	// Initialise the LSystem.
+	LSystem = new LSystemClass;
+	if (!LSystem)
+	{
+		return false;
+	}
+
+	// Generate the L-System.
+	LSystem->Generate(2);
+
+	// Get the generated string to be parsed here.
+	axiom = LSystem->GetAxiom();
+
 	// Initialize the vertex and instace buffer that hold the geometry for the model.
 	result = InitializeBuffers(device);
 	if(!result)
@@ -49,19 +62,6 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 	{
 		return false;
 	}
-
-	// Initialise the LSystem.
-	LSystem = new LSystemClass;
-	if (!LSystem)
-	{
-		return false;
-	}
-
-	// Generate the L-System.
-	LSystem->Generate(1);
-
-	// Get the generated string to be parsed here.
-	axiom = LSystem->GetAxiom();
 
 	return true;
 }
@@ -137,6 +137,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	{
 		vertices[i].position = D3DXVECTOR3(m_model[i].x, m_model[i].y, m_model[i].z);
 		vertices[i].texture = D3DXVECTOR2(m_model[i].tu, m_model[i].tv);
+		// Normals
 	}
 
 	// Set up the description of the static vertex buffer.
@@ -164,7 +165,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	vertices = 0;
 
 	// Set the number of instanes in the array.
-	m_instanceCount = 18;
+	m_instanceCount = 10;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -173,14 +174,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-	///////////////////////////////////////////////////////////
-	// This is likely where I'll need to tie in my L-System. //
-	///////////////////////////////////////////////////////////
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-	// For multiple cacti, I'll need to swap this out for a location relative to the terrain. //
-	////////////////////////////////////////////////////////////////////////////////////////////
-
+	// Fill the instance buffer with transform information based on the L-System.
 	ParseAxiom(instances, m_instanceCount);
 
 	// Set up the description of the static instance buffer.
@@ -206,6 +200,8 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// Release the instance array now that we are done with it.
 	delete [] instances;
 	instances = 0;
+
+	// ERROR?
 
 	return true;
 }
@@ -248,7 +244,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 	// Set the array of pointers to the Vertex and Instance Buffers.
 	bufferPointers[0] = m_vertexBuffer;
-	bufferPointers[0] = m_instanceBuffer;
+	bufferPointers[0] = m_instanceBuffer;	// Are these used?
     
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	deviceContext->IASetVertexBuffers(0, 2, &m_vertexBuffer, strides, offsets);
@@ -326,9 +322,6 @@ bool ModelClass::LoadModel(char* filename)
 	// Read in the vertex count.
 	fin >> m_vertexCount;
 
-	// Set the number of indices to be the same as the vertex count.
-	//m_indexCount = m_vertexCount;
-
 	// Create the model using the vertex count that was read in.
 	m_model = new ModelType[m_vertexCount];
 	if(!m_model)
@@ -371,8 +364,10 @@ void ModelClass::ReleaseModel()
 	return;
 }
 
+
 void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 {
+	//Initialise the Matricies we'll be using to manipulate our cactus.
 	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_transform;
 
 	// Initialise matricies to the Indentiy Matrix.
@@ -381,78 +376,123 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	D3DXMatrixIdentity(&m_rotate);
 	D3DXMatrixIdentity(&m_transform);
 
-	// For Matrix Decomposition Debuggind
+	// For Matrix Decomposition Debugging.
 	D3DXVECTOR3    pOutScale;
 	D3DXQUATERNION pOutRotation;
 	D3DXVECTOR3    pOutTranslation;
 
+	// Create our Matrix Stack (used for branching.) 
+	std::stack<D3DXMATRIX> MatrixStack;
+
+	// Define our translation matricies.
+	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
+	D3DXMatrixRotationX(&m_rotate, 0.174533f);					// Rotate 10 Degrees (In radians.)
+	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
+
 	// Set a Root location (At the origin using an Identity Matrix.)
+	D3DXMatrixIdentity(&m_transform);
 	instances[0].transform = m_transform;
+	MatrixStack.push(m_transform);
 
-	// Translate - Ensure Rotation around the edge, not the centre.
-	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);
+	int filledInstances = 0;
+	int debugfoo = 0;
 
-	// Rotate 10 Degrees (In radians.)
-	D3DXMatrixRotationX(&m_rotate, 0.174533f);
-
-	// Translate - One Cube's Width so the cubes move out and don't overlap.
-	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);
-
-	// Define the remaining instances based on the root.
-	for (int j = 1; j < m_instanceCount; j++)
+	for (int i = 0; i < axiom.length(); i++)
 	{
-		// Reset the Transformation Matrix.
-		D3DXMatrixIdentity(&m_transform);
+		// Apply L-System Rules
+		if (axiom.at(i) == 'F')
+		{
+			// Update the number of instances in the buffer.
+			filledInstances++;
 
-		// Translate - Ensure Rotation around the edge, not the centre.
-		D3DXMatrixMultiply(&m_transform, &m_translate_1, &m_transform);
+			// Translate out
+			D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
 
-		// Rotate 0.523599 Radians (30 Degrees.)
-		D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+			// Define this transform relative to the previous instance.
+			D3DXMatrixMultiply(&m_transform, &m_transform, &instances[filledInstances - 1].transform);		// Stack?
 
-		// Translate - One Cube's Width so the cubes move out and don't overlap.
-		D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
+			// Update this model's instance buffer.
+			instances[filledInstances].transform = m_transform;
 
-		// Apply these transforms to the matrix of the previous instance.
-		D3DXMatrixMultiply(&m_transform, &m_transform, &instances[j - 1].transform);
+			// Reset the transform matrix to make room for new translations/rotations.
+			D3DXMatrixIdentity(&m_transform);
 
-		// Update this model's instance buffer.
-		instances[j].transform = m_transform;
+			// Debug
+			D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
 
-		// Erin's Advice - Decompose my marticies here to make sure they're ok.
-		D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
-	}
+		}
+		else if (axiom.at(i) == '+')	// Rotate in the positive direction.
+		{
+			//D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+			D3DXMatrixMultiply(&m_transform, &m_rotate, &m_transform);
+		}
+		else if (axiom.at(i) == '-')	// Rotate in the negative direction.
+		{
+			// Placeholder
+			//D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+			D3DXMatrixMultiply(&m_transform, &m_rotate, &m_transform);
+		}
+		else if (axiom.at(i) == '[')	// Begin a branch.
+		{
+			// Push the current matrix onto the stack.
+			MatrixStack.push(m_transform);
 
-	// Make sure there's enough data in the axiom.
-	//if (axiom.length() >= sizeof(instances))
-	//{
-		// Initialise the Matricies we'll be using to manipulate our cactus.
-	
+			// scale down
+				// TO DO
+		}
+		else if (axiom.at(i) == ']')	// End a branch.
+		{
+			// Pop the current matrix off the stack.
+			MatrixStack.pop();
 
-		//for (unsigned i = 0; i<axiom.length(); ++i)
-		//{
-		//	if (axiom.at(i) == 'F')
-		//	{
-		//		// Move the Matrix forward.
-		//	}
-		//	else if (axiom.at(i) == '+')
-		//	{
-		//		// Rotate the Matrix in the positive direction.
-		//	}
-		//	else if (axiom.at(i) == '-')
-		//	{
-		//		// Rotate the Matrix in the negative direction.
-		//	}
-		//	else if (axiom.at(i) == '[')
-		//	{
-		//		// Begin a branch.
-		//		// Push the current matrix onto the stack.
-		//	}
-		//	else if (axiom.at(i) == ']')
-		//	{
-		//		// End a branch.
-		//		// Pop the current matrix off the stack.
-		//	}
-		//}
-	//}
+			// Set m_transform to be the matrix at the top of the stack.
+			m_transform = MatrixStack.top();
+
+			debugfoo = MatrixStack.size();
+
+			
+
+			// scale up
+				// TO DO
+		}
+
+		// Stop itterating through the axiom once the instances have all been calculated.
+		if (filledInstances == (m_instanceCount - 1))
+		{
+			return;
+		}
+	} // end for
 }
+
+
+/*
+   // DA RULES
+   if (axiom.at(i) == 'F')			// Move forward.
+   {
+   D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
+   }
+   else if (axiom.at(i) == '+')	// Rotate in the positive direction.
+   {
+   // Rotate 0.523599 Radians (30 Degrees.)
+   D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
+   }
+   else if (axiom.at(i) == '-')	// Rotate in the negative direction.
+   {
+   // TO DO
+   }
+   else if (axiom.at(i) == '[')	// Begin a branch.
+   {
+   // Push the current matrix onto the stack.
+   MatrixStack.push(m_transform);
+   }
+   else if (axiom.at(i) == ']')	// End a branch.
+   {
+   // Pop the current matrix off the stack.
+   MatrixStack.pop();
+   // then top - set to the top value
+   }
+
+   // Erin's Advice - Decompose my marticies here to make sure they're ok.
+   //D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
+
+*/
