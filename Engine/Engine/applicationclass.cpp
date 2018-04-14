@@ -228,7 +228,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialise the cube object.
-	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/seafloor.dds");
+	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/SandTexture.png");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
