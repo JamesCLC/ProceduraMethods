@@ -30,7 +30,7 @@ void LSystemClass::Generate(int itterations)
 			// Apply a rule
 			if (axiom.at(i) == 'F')
 			{
-				temp.append("F[-F][+F][FF]");
+				temp.append("FF[-F][+F][FF]");
 			}
 		}
 		axiom.swap(temp);
