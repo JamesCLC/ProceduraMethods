@@ -55,6 +55,8 @@ c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(608): w
   c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50445): note: see previous definition of 'D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS'
 c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(609): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50454): note: see previous definition of 'D3D10_ERROR_FILE_NOT_FOUND'
-\\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(399): warning C4018: '<': signed/unsigned mismatch
+\\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(392): warning C4305: 'argument': truncation from 'double' to 'FLOAT'
+\\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(393): warning C4305: 'argument': truncation from 'double' to 'FLOAT'
+\\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(411): warning C4018: '<': signed/unsigned mismatch
   Engine.vcxproj -> \\StuHome\HomeDrive2$\1501082\ProceduraMethods\Engine\Debug\Engine.exe
   Engine.vcxproj -> \\StuHome\HomeDrive2$\1501082\ProceduraMethods\Engine\Debug\Engine.pdb (Full PDB)

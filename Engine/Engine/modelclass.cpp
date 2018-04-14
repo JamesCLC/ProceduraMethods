@@ -165,7 +165,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	vertices = 0;
 
 	// Set the number of instanes in the array.
-	m_instanceCount = 10;
+	m_instanceCount = 1000;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -385,14 +385,26 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 
 	// Define our translation matricies.
 	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
-	D3DXMatrixRotationX(&m_rotate, 0.174533f);					// Rotate 10 Degrees (In radians.)
-	D3DXMatrixRotationX(&m_rotate_2, 6.10865f);					// Rotate 10 Degrees (In radians.)
+
+	//D3DXMatrixRotationX(&m_rotate, 0.523599);					// Positive 30 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.75959);				// Negative 30 degree rotation (In radians.)
+
+	//D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.49779);					// Negative 45 degree rotation (In radians.)
+
+	//D3DXMatrixRotationX(&m_rotate, 1.0472);					// Positive 60 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.23599);				// Negative 60 degree rotation (In radians.)
+
+	D3DXMatrixRotationX(&m_rotate, 1.5708);					// Positive 90 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate_2, 4.71239);				// Negative 90 degree rotation (In radians.)
+
 	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
 
 	// Set a Root location (At the origin using an Identity Matrix.)
 	D3DXMatrixIdentity(&m_transform);
 	instances[0].transform = m_transform;
-	MatrixStack.push(m_transform);
+	m_parent = m_transform;
+	MatrixStack.push(m_parent);
 
 	int filledInstances = 0;
 
@@ -403,11 +415,9 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 		{
 			// Translate out one branch legnth.
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
-			//D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
 
 			// Apply the matrix relative to the branch before it.
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_parent);
-			//D3DXMatrixMultiply(&m_transform, &m_parent, &m_transform);
 
 			// Set this matrix to be the parent for the next branch.
 			m_parent = m_transform;
@@ -423,34 +433,39 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 
 			// Debug
 			D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
-
-			int foo = 0;
 		}
+
 		else if (axiom.at(i) == '+')	// Rotate in the positive direction.
 		{
+			// Translate out one half width
+			D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
+
+			// Apply Rotation
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
-			//D3DXMatrixMultiply(&m_transform, &m_rotate, &m_transform);
 		}
+
 		else if (axiom.at(i) == '-')	// Rotate in the negative direction.
 		{
+			// Translate out one half width
+			D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
+
+			// Appy Rotation
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_2);
-			//D3DXMatrixMultiply(&m_transform, &m_rotate_2, &m_transform);
 		}
+
 		else if (axiom.at(i) == '[')	// Begin a branch.
 		{
-			MatrixStack.push(m_transform);
+			// Store the transformation of the branch's start point.
+			MatrixStack.push(m_parent);
 		}
+
 		else if (axiom.at(i) == ']')	// End a branch.
 		{
-			// Pop the current matrix off the stack.
-			if (MatrixStack.size() > 0)
-			{
-				// Set m_transform to be the matrix at the top of the stack.
-				m_parent = MatrixStack.top();
+			// Set m_transform to be the matrix at the top of the stack.
+			m_parent = MatrixStack.top();
 
-				MatrixStack.pop();
-			}
-
+			// Reset to the start of THIS branch.
+			MatrixStack.pop();
 		}
 
 		// Stop itterating through the axiom once the instances have all been calculated.
@@ -462,103 +477,3 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 }
 
 // for scaling: - filledInstances/m_instancecount
-
-/*
-void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
-{
-//Initialise the Matricies we'll be using to manipulate our cactus.
-D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_rotate_2, m_transform, m_parent;
-
-// Initialise matricies to the Indentiy Matrix.
-D3DXMatrixIdentity(&m_translate_1);
-D3DXMatrixIdentity(&m_translate_2);
-D3DXMatrixIdentity(&m_rotate);
-D3DXMatrixIdentity(&m_transform);
-D3DXMatrixIdentity(&m_parent);
-
-// For Matrix Decomposition Debugging.
-D3DXVECTOR3    pOutScale;
-D3DXQUATERNION pOutRotation;
-D3DXVECTOR3    pOutTranslation;
-
-// Create our Matrix Stack (used for branching.)
-std::stack<D3DXMATRIX> MatrixStack;
-
-// Define our translation matricies.
-D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
-D3DXMatrixRotationX(&m_rotate, 0.174533f);					// Rotate 10 Degrees (In radians.)
-D3DXMatrixRotationX(&m_rotate_2, 6.10865f);					// Rotate 10 Degrees (In radians.)
-D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
-
-// Set a Root location (At the origin using an Identity Matrix.)
-D3DXMatrixIdentity(&m_transform);
-instances[0].transform = m_transform;
-MatrixStack.push(m_transform);
-
-int filledInstances = 0;
-
-for (int i = 0; i < axiom.length(); i++)
-{
-// Apply L-System Rules
-if (axiom.at(i) == 'F')
-{
-// Translate out one branch legnth.
-D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
-//D3DXMatrixMultiply(&m_transform, &m_translate_2, &m_transform);
-
-// Apply the matrix relative to the branch before it.
-D3DXMatrixMultiply(&m_transform, &m_transform, &m_parent);
-//D3DXMatrixMultiply(&m_transform, &m_parent, &m_transform);
-
-// Update this model's instance buffer.
-instances[filledInstances].transform = m_transform;
-
-// Update the number of instances in the buffer.
-filledInstances++;
-
-// Set this matrix to be the parent for the next branch.
-m_parent = m_transform;
-
-// Debug
-D3DXMatrixDecompose(&pOutScale, &pOutRotation, &pOutTranslation, &m_transform);
-
-int foo = 0;
-}
-else if (axiom.at(i) == '+')	// Rotate in the positive direction.
-{
-D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate);
-//D3DXMatrixMultiply(&m_transform, &m_rotate, &m_transform);
-}
-else if (axiom.at(i) == '-')	// Rotate in the negative direction.
-{
-D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_2);
-//D3DXMatrixMultiply(&m_transform, &m_rotate_2, &m_transform);
-}
-else if (axiom.at(i) == '[')	// Begin a branch.
-{
-MatrixStack.push(m_transform);
-}
-else if (axiom.at(i) == ']')	// End a branch.
-{
-// Pop the current matrix off the stack.
-if (MatrixStack.size() > 0)
-{
-
-MatrixStack.pop();
-
-// Set m_transform to be the matrix at the top of the stack.
-m_parent = MatrixStack.top();
-
-}
-
-}
-
-// Stop itterating through the axiom once the instances have all been calculated.
-if (filledInstances == (m_instanceCount - 1))
-{
-return;
-}
-} // end for
-}
-
-*/
