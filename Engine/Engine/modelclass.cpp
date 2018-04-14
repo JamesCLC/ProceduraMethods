@@ -44,7 +44,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 	}
 
 	// Generate the L-System.
-	LSystem->Generate(3);
+	LSystem->Generate(2);
 
 	// Get the generated string to be parsed here.
 	axiom = LSystem->GetAxiom();
@@ -165,7 +165,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	vertices = 0;
 
 	// Set the number of instanes in the array.
-	m_instanceCount = 1000;
+	m_instanceCount = 100;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -368,7 +368,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	int filledInstances = 0;
 
 	//Initialise the Matricies we'll be using to manipulate our cactus.
-	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_rotate_2, m_transform, m_parent;
+	D3DXMATRIX m_translate_1, m_translate_2, m_rotate, m_rotate_2, m_transform, m_parent, m_scaling;
 
 	// Initialise matricies to the Indentiy Matrix.
 	D3DXMatrixIdentity(&m_translate_1);
@@ -376,6 +376,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	D3DXMatrixIdentity(&m_rotate);
 	D3DXMatrixIdentity(&m_transform);
 	D3DXMatrixIdentity(&m_parent);
+	D3DXMatrixIdentity(&m_scaling);
 
 	// For Matrix Decomposition Debugging.
 	D3DXVECTOR3    pOutScale;
@@ -395,14 +396,16 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	//D3DXMatrixRotationX(&m_rotate, 0.523599);					// Positive 30 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.75959);				// Negative 30 degree rotation (In radians.)
 
-	//D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.49779);				// Negative 45 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate_2, 5.49779);				// Negative 45 degree rotation (In radians.)
 
-	D3DXMatrixRotationX(&m_rotate, 1.0472);					// Positive 60 degree rotation (In radians.)
-	D3DXMatrixRotationX(&m_rotate_2, 5.23599);				// Negative 60 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, 1.0472);					// Positive 60 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.23599);				// Negative 60 degree rotation (In radians.)
 
 	//D3DXMatrixRotationX(&m_rotate, 1.5708);					// Positive 90 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 4.71239);				// Negative 90 degree rotation (In radians.)
+
+	D3DXMatrixScaling(&m_scaling, 0.99f, 0.99f, 0.99f);			// Scaling matrix to make sure each branch is smaller than the last.
 
 	// Set a Root location (At the origin using an Identity Matrix.)
 	instances[filledInstances].transform = m_transform;
@@ -458,6 +461,9 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 
 		else if (axiom.at(i) == '[')	// Begin a branch.
 		{
+			// Scale down slightly
+			//D3DXMatrixMultiply(&m_transform, &m_parent, &m_scaling);
+
 			// Store the transformation of the branch's start point.
 			MatrixStack.push(m_parent);
 		}
