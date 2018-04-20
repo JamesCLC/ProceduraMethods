@@ -1,11 +1,13 @@
-#include "LSystemClass.h"
+﻿#include "LSystemClass.h"
 
 
 
 LSystemClass::LSystemClass()
 {
 	// Default Axiom starter value.
-	axiom = "FFFF";
+	axiom = "FFF";
+
+	//axiom = "F[+F][-F[-F]F]F[+F][-F]";
 }
 
 LSystemClass::LSystemClass(std::string n_Axiom)
@@ -23,22 +25,49 @@ void LSystemClass::Generate(int itterations)
 {
 	for (int i = 0; i < itterations; i++)
 	{
+		// Create a temporary string to store this itteration's results.
 		temp.clear();
+
 		// For each character in the axiom
 		for (unsigned i = 0; i<axiom.length(); ++i)
 		{
 			// Apply a rule
 			if (axiom.at(i) == 'F')
 			{
-				temp.append("F[-F][+F][FF]");
+				// Primary Rule
+				//temp.append("F[+F]F[-F]F");
+
+				temp.append("[+F+F+F+F+F[-F-F-F]+F+F][-F-F-F-F-F[+F+F+F]-F-F]FFFFF");
+				
+				//////// Tested Rules ////////
+				//temp.append("F[+F][-F[-F]F]F[+F][-F]");
+				//temp.append("F[-FF][+FF][FF");
+				//temp.append("F+FF-FF-F-F+F+FF-F-F+F+FF+FF-F");
+				//temp.append("FF+[+F-F-F]-[-F+F+F]");
+				// Palm Tree.
+				//temp.append("[+F+F+F+F+F+F+F][-F-F-F-F-F-F-F]FFFFF");
+				// Palm Tree, but with branches on branches.
+				//temp.append("[+F+F+F+F+F[-F-F-F]+F+F][-F-F-F-F-F[+F+F+F]-F-F]FFFFF");
+
+				// Example L-Systems from [http://www.inf.ed.ac.uk/teaching/courses/inf1/fp/2008/tutorials/Tutorial7.pdf]
+				// 32-segment
+				//temp.append("F+F-F-F+F+FF-F+F+FF+F-F-FF+FF-FF+F+F-FF-F-F+FF-F-F+F+F-F+");
+				//temp.append("F-[[F]+F]+F[+FF]-F");
+				//temp.append("F-F+F+FF-F-F+F");
+				//temp.append("-F+FF++F+F--F-F");
+				//////// Tested Rules ////////
 			}
 		}
+
+		// Update the axiom to be the product of this itteration
 		axiom.swap(temp);
 	}	
 }
 
 void LSystemClass::Parse(int j)
 {
+	// Moved to modelclass.cpp!
+
 	for (unsigned i = 0; i<axiom.length(); ++i)
 	{
 		if (axiom.at(i) == 'F')
