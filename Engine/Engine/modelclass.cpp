@@ -44,7 +44,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 	}
 
 	// Generate the L-System.
-	LSystem->Generate(6);
+	LSystem->Generate(2);
 
 	// Get the generated string to be parsed here.
 	axiom = LSystem->GetAxiom();
@@ -165,7 +165,8 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	vertices = 0;
 
 	// Set the number of instanes in the array.
-	m_instanceCount = 1000;
+	// Must be no greater than the legnth of the generated aixom.
+	m_instanceCount = 100;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -390,11 +391,11 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
 	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
 
-	//D3DXMatrixRotationX(&m_rotate, 0.3926991);				// Positive 22.5 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.8904862);				// Negative 22.5 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate, 0.3926991);				// Positive 22.5 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate_2, 5.8904862);				// Negative 22.5 degree rotation (In radians.)
 
-	D3DXMatrixRotationX(&m_rotate, 0.436332);					// Positive 25 degree rotation (In radians.)
-	D3DXMatrixRotationX(&m_rotate_2, 5.84685);					// Negative 25 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, 0.436332);					// Positive 25 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.84685);					// Negative 25 degree rotation (In radians.)
 
 	//D3DXMatrixRotationX(&m_rotate, 0.523599);					// Positive 30 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.75959);				// Negative 30 degree rotation (In radians.)
