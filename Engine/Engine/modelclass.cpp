@@ -44,7 +44,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 	}
 
 	// Generate the L-System.
-	LSystem->Generate(2);
+	LSystem->Generate(6);
 
 	// Get the generated string to be parsed here.
 	axiom = LSystem->GetAxiom();
@@ -165,7 +165,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	vertices = 0;
 
 	// Set the number of instanes in the array.
-	m_instanceCount = 100;
+	m_instanceCount = 1000;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -393,11 +393,14 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	//D3DXMatrixRotationX(&m_rotate, 0.3926991);				// Positive 22.5 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.8904862);				// Negative 22.5 degree rotation (In radians.)
 
+	D3DXMatrixRotationX(&m_rotate, 0.436332);					// Positive 25 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate_2, 5.84685);					// Negative 25 degree rotation (In radians.)
+
 	//D3DXMatrixRotationX(&m_rotate, 0.523599);					// Positive 30 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.75959);				// Negative 30 degree rotation (In radians.)
 
-	D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
-	D3DXMatrixRotationX(&m_rotate_2, 5.49779);				// Negative 45 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.49779);				// Negative 45 degree rotation (In radians.)
 
 	//D3DXMatrixRotationX(&m_rotate, 1.0472);					// Positive 60 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.23599);				// Negative 60 degree rotation (In radians.)
@@ -478,6 +481,8 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 				// Reset to the start of THIS branch.
 				MatrixStack.pop();
 			}
+
+			// Scale back up from previous stage? Or would this happen automatically?
 		}
 
 		// Stop itterating through the axiom once the instances have all been calculated.
