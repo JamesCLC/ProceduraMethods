@@ -58,5 +58,7 @@ c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(609): w
 \\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(411): warning C4305: 'argument': truncation from 'double' to 'FLOAT'
 \\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(412): warning C4305: 'argument': truncation from 'double' to 'FLOAT'
 \\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(424): warning C4018: '<': signed/unsigned mismatch
+  LSystemClass.cpp
+  Generating Code...
   Engine.vcxproj -> \\StuHome\HomeDrive2$\1501082\ProceduraMethods\Engine\Debug\Engine.exe
   Engine.vcxproj -> \\StuHome\HomeDrive2$\1501082\ProceduraMethods\Engine\Debug\Engine.pdb (Full PDB)

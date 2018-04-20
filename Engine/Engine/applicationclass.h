@@ -67,6 +67,11 @@ private:
 	LightClass* m_Light;
 	ModelClass* m_Cube;
 	TextureShaderClass* m_TextureShader;
+
+
+	// Post Processing
+
+
 };
 
 #endif
