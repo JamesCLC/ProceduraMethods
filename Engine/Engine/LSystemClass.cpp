@@ -5,7 +5,7 @@
 LSystemClass::LSystemClass()
 {
 	// Default Axiom starter value.
-	axiom = "FFF";
+	axiom = "F";
 
 	//axiom = "F[+F][-F[-F]F]F[+F][-F]";
 }
@@ -37,7 +37,7 @@ void LSystemClass::Generate(int itterations)
 				// Primary Rule
 				//temp.append("F[+F]F[-F]F");
 
-				temp.append("[+F+F+F+F+F[-F-F-F]+F+F][-F-F-F-F-F[+F+F+F]-F-F]FFFFF");
+				temp.append("[FF+[+F-F-F]-[-F+F+F]");
 				
 				//////// Tested Rules ////////
 				//temp.append("F[+F][-F[-F]F]F[+F][-F]");

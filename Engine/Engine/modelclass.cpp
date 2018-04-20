@@ -44,7 +44,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 	}
 
 	// Generate the L-System.
-	LSystem->Generate(2);
+	LSystem->Generate(6);
 
 	// Get the generated string to be parsed here.
 	axiom = LSystem->GetAxiom();
@@ -388,14 +388,19 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	std::stack<D3DXMATRIX> MatrixStack;
 
 	// Define our translation matricies.
+	// Noticable gaps for debugging
 	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
 	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
 
-	D3DXMatrixRotationX(&m_rotate, 0.3926991);				// Positive 22.5 degree rotation (In radians.)
-	D3DXMatrixRotationX(&m_rotate_2, 5.8904862);				// Negative 22.5 degree rotation (In radians.)
+	// Actual matricies to keep the cubes within a sensible distance of each other
+	//D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
+	//D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
+
+	//D3DXMatrixRotationX(&m_rotate, 0.3926991);				// Positive 22.5 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.8904862);				// Negative 22.5 degree rotation (In radians.)
 
 	//D3DXMatrixRotationX(&m_rotate, 0.436332);					// Positive 25 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.84685);					// Negative 25 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, 5.84685);				// Negative 25 degree rotation (In radians.)
 
 	//D3DXMatrixRotationX(&m_rotate, 0.523599);					// Positive 30 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.75959);				// Negative 30 degree rotation (In radians.)
@@ -403,8 +408,8 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	//D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 5.49779);				// Negative 45 degree rotation (In radians.)
 
-	//D3DXMatrixRotationX(&m_rotate, 1.0472);					// Positive 60 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.23599);				// Negative 60 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate, 1.0472);						// Positive 60 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate_2, 5.23599);					// Negative 60 degree rotation (In radians.)
 
 	//D3DXMatrixRotationX(&m_rotate, 1.5708);					// Positive 90 degree rotation (In radians.)
 	//D3DXMatrixRotationX(&m_rotate_2, 4.71239);				// Negative 90 degree rotation (In radians.)
