@@ -20,6 +20,9 @@ ApplicationClass::ApplicationClass()
 	m_Light = 0;
 	m_Cube = 0;
 	m_TextureShader = 0;
+	
+	// Post Processing
+	m_RenderTexture = 0;
 }
 
 
@@ -249,7 +252,26 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
 		return false;
 	}
-	
+
+
+	////////// Post Processing ////////////////////
+	// Create the render texture
+	m_RenderTexture = new RenderTextureClass();
+	if (!m_RenderTexture)
+	{
+		return false;
+	}
+
+	// Initialise the render texture object.
+	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	///////////////////////////////////////////////
+
 	return true;
 }
 
@@ -565,7 +587,7 @@ bool ApplicationClass::RenderGraphics()
 	return true;
 }
 
-bool ApplicationClass::RendertoTexture()
+void ApplicationClass::RendertoTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
@@ -583,41 +605,41 @@ bool ApplicationClass::RendertoTexture()
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
-	// Rotate the world matrix by the rotation value so that the cube will spin.
-	D3DXMatrixRotationY(&worldMatrix, rotation);
+	//// Rotate the world matrix by the rotation value so that the cube will spin.
+	//D3DXMatrixRotationY(&worldMatrix, rotation);
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_Model->Render(m_Direct3D->GetDevice());
+	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	//m_Model->Render(m_Direct3D->GetDevice());
 
-	// Render the model using the texture shader.
-	m_TextureShader->Render(m_Direct3D->GetDevice(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
+	//// Render the model using the texture shader.
+	//m_TextureShader->Render(m_Direct3D->GetDevice(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
 
-	// Use the translation matrix to translate the second cube.
-	D3DXMatrixTranslation(&worldMatrix, 1.0f, 2.0f, 2.0f);
+	//// Use the translation matrix to translate the second cube.
+	//D3DXMatrixTranslation(&worldMatrix, 1.0f, 2.0f, 2.0f);
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_Model2->Render(m_D3D->GetDevice());
+	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	//m_Model2->Render(m_D3D->GetDevice());
 
-	// Render the model using the texture shader.
-	m_TextureShader->Render(m_D3D->GetDevice(), m_Model2->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model2->GetTexture());
+	//// Render the model using the texture shader.
+	//m_TextureShader->Render(m_D3D->GetDevice(), m_Model2->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model2->GetTexture());
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
-	m_D3D->SetBackBufferRenderTarget();
+	m_Direct3D->SetBackBufferRenderTarget();
 
 	// Reset the viewport back to the original.
-	m_D3D->ResetViewport();
+	m_Direct3D->ResetViewport();
 
 	return;
 }
 
-bool ApplicationClass::DownSampleTexture()
+void ApplicationClass::DownSampleTexture()
 {
 }
 
-bool ApplicationClass::UpSampleTexture()
+void ApplicationClass::UpSampleTexture()
 {
 }
 
-bool ApplicationClass::RenderFinalScene()
+void ApplicationClass::RenderFinalScene()
 {
 }

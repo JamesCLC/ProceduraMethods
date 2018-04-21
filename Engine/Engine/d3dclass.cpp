@@ -570,6 +570,22 @@ void D3DClass::GetVideoCardInfo(char* cardName, int& memory)
 	return;
 }
 
+void D3DClass::SetBackBufferRenderTarget()
+{
+	// Bind the render target view and depth stencil buffer to the output render pipeline.
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
+
+	return;
+}
+
+void D3DClass::ResetViewport()
+{
+	// Set the viewport.
+	m_deviceContext->RSSetViewports(1, &m_viewport);
+
+	return;
+}
+
 
 void D3DClass::TurnZBufferOn()
 {

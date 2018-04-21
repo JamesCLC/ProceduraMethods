@@ -55,10 +55,10 @@ private:
 	bool RenderGraphics();
 
 	// Post Processing
-	bool RendertoTexture();
-	bool DownSampleTexture();
-	bool UpSampleTexture();
-	bool RenderFinalScene();
+	void RendertoTexture();
+	void DownSampleTexture();
+	void UpSampleTexture();
+	void RenderFinalScene();
 	// End Post Processing
 
 private:
@@ -76,10 +76,10 @@ private:
 	LightClass* m_Light;
 	ModelClass* m_Cube;
 	TextureShaderClass* m_TextureShader;
-	RenderTextureClass* m_RenderTexture;
+
 
 	// Post Processing
-
+	RenderTextureClass* m_RenderTexture;
 
 };
 

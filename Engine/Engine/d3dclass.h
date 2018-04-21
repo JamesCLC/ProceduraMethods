@@ -48,6 +48,11 @@ public:
 
 	void GetVideoCardInfo(char*, int&);
 
+	// Post Processing
+	void SetBackBufferRenderTarget();
+	void ResetViewport();
+	//
+
 	void TurnZBufferOn();
 	void TurnZBufferOff();
 	void TurnOnAlphaBlending();
@@ -71,6 +76,10 @@ private:
 	ID3D11DepthStencilState* m_depthDisabledStencilState;
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
+
+	// Post Processing
+	D3D11_VIEWPORT m_viewport;
+	//
 };
 
 #endif
