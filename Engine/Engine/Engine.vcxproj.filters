@@ -81,6 +81,9 @@
     <ClCompile Include="LSystemClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="convolutionshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -146,6 +149,9 @@
     <ClInclude Include="LSystemClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="convolutionshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -164,6 +170,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="texture.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="convolution.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="convolution.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

@@ -32,6 +32,7 @@ const float SCREEN_NEAR = 0.1f;
 ///
 #include "modelclass.h"
 #include "textureshaderclass.h"
+#include "convolutionshaderclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +48,10 @@ public:
 	bool Initialize(HINSTANCE, HWND, int, int);
 	void Shutdown();
 	bool Frame();
+
+	// Post Processing
+
+	//
 
 private:
 	bool HandleInput(float);

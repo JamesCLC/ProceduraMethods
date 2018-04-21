@@ -84,6 +84,7 @@
     <ClCompile Include="applicationclass.cpp" />
     <ClCompile Include="cactusclass.cpp" />
     <ClCompile Include="cameraclass.cpp" />
+    <ClCompile Include="convolutionshaderclass.cpp" />
     <ClCompile Include="cpuclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
     <ClCompile Include="fontclass.cpp" />
@@ -108,6 +109,7 @@
     <ClInclude Include="applicationclass.h" />
     <ClInclude Include="cactusclass.h" />
     <ClInclude Include="cameraclass.h" />
+    <ClInclude Include="convolutionshaderclass.h" />
     <ClInclude Include="cpuclass.h" />
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="fontclass.h" />
@@ -128,6 +130,8 @@
     <ClInclude Include="timerclass.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="convolution.ps" />
+    <None Include="convolution.vs" />
     <None Include="font.ps" />
     <None Include="font.vs" />
     <None Include="terrain.ps" />
