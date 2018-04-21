@@ -24,14 +24,14 @@ RenderTextureClass::~RenderTextureClass()
 }
 
 
-bool RenderTextureClass::Initialize(ID3D10Device* device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
+bool RenderTextureClass::Initialize(ID3D11Device* device, int textureWidth, int textureHeight, float screenDepth, float screenNear)
 {
-	D3D10_TEXTURE2D_DESC textureDesc;
+	D3D11_TEXTURE2D_DESC textureDesc;
 	HRESULT result;
-	D3D10_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-	D3D10_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-	D3D10_TEXTURE2D_DESC depthBufferDesc;
-	D3D10_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	D3D11_TEXTURE2D_DESC depthBufferDesc;
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 
 
 	// Store the width and height of the render texture.
@@ -48,8 +48,8 @@ bool RenderTextureClass::Initialize(ID3D10Device* device, int textureWidth, int 
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D10_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D10_BIND_SHADER_RESOURCE;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	textureDesc.CPUAccessFlags = 0;
     textureDesc.MiscFlags = 0;
 
@@ -62,7 +62,7 @@ bool RenderTextureClass::Initialize(ID3D10Device* device, int textureWidth, int 
 
 	// Setup the description of the render target view.
 	renderTargetViewDesc.Format = textureDesc.Format;
-	renderTargetViewDesc.ViewDimension = D3D10_RTV_DIMENSION_TEXTURE2D;
+	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
 
 	// Create the render target view.
@@ -74,7 +74,7 @@ bool RenderTextureClass::Initialize(ID3D10Device* device, int textureWidth, int 
 
 	// Setup the description of the shader resource view.
 	shaderResourceViewDesc.Format = textureDesc.Format;
-	shaderResourceViewDesc.ViewDimension = D3D10_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
 	shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
@@ -96,8 +96,8 @@ bool RenderTextureClass::Initialize(ID3D10Device* device, int textureWidth, int 
 	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	depthBufferDesc.SampleDesc.Count = 1;
 	depthBufferDesc.SampleDesc.Quality = 0;
-	depthBufferDesc.Usage = D3D10_USAGE_DEFAULT;
-	depthBufferDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL;
+	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthBufferDesc.CPUAccessFlags = 0;
 	depthBufferDesc.MiscFlags = 0;
 
@@ -113,7 +113,7 @@ bool RenderTextureClass::Initialize(ID3D10Device* device, int textureWidth, int 
 
 	// Set up the depth stencil view description.
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilViewDesc.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
 	// Create the depth stencil view.
@@ -177,7 +177,7 @@ void RenderTextureClass::Shutdown()
 }
 
 
-void RenderTextureClass::SetRenderTarget(ID3D10Device* device)
+void RenderTextureClass::SetRenderTarget(ID3D11DeviceContext* device)
 {
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
 	device->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
@@ -189,7 +189,7 @@ void RenderTextureClass::SetRenderTarget(ID3D10Device* device)
 }
 
 
-void RenderTextureClass::ClearRenderTarget(ID3D10Device* device, float red, float green, float blue, float alpha)
+void RenderTextureClass::ClearRenderTarget(ID3D11DeviceContext* device, float red, float green, float blue, float alpha)
 {
 	float color[4];
 
@@ -204,13 +204,13 @@ void RenderTextureClass::ClearRenderTarget(ID3D10Device* device, float red, floa
 	device->ClearRenderTargetView(m_renderTargetView, color);
     
 	// Clear the depth buffer.
-	device->ClearDepthStencilView(m_depthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0);
+	device->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	return;
 }
 
 
-ID3D10ShaderResourceView* RenderTextureClass::GetShaderResourceView()
+ID3D11ShaderResourceView* RenderTextureClass::GetShaderResourceView()
 {
 	return m_shaderResourceView;
 }

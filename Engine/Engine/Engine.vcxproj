@@ -97,6 +97,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="modelclass.cpp" />
     <ClCompile Include="positionclass.cpp" />
+    <ClCompile Include="rendertextureclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="terrainclass.cpp" />
     <ClCompile Include="terrainshaderclass.cpp" />
@@ -121,6 +122,7 @@
     <ClInclude Include="LSystemClass.h" />
     <ClInclude Include="modelclass.h" />
     <ClInclude Include="positionclass.h" />
+    <ClInclude Include="rendertextureclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="terrainclass.h" />
     <ClInclude Include="terrainshaderclass.h" />

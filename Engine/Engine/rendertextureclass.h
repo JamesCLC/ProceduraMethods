@@ -4,11 +4,12 @@
 #ifndef _RENDERTEXTURECLASS_H_
 #define _RENDERTEXTURECLASS_H_
 
+// Code based on [http://www.rastertek.com/dx11tut22.html]
 
 //////////////
 // INCLUDES //
 //////////////
-#include <d3d10.h>
+#include <d3d11.h>
 #include <d3dx10math.h>
 
 
@@ -22,12 +23,12 @@ public:
 	RenderTextureClass(const RenderTextureClass&);
 	~RenderTextureClass();
 
-	bool Initialize(ID3D10Device*, int, int, float, float);
+	bool Initialize(ID3D11Device*, int, int, float, float);
 	void Shutdown();
 
-	void SetRenderTarget(ID3D10Device*);
-	void ClearRenderTarget(ID3D10Device*, float, float, float, float);
-	ID3D10ShaderResourceView* GetShaderResourceView();
+	void SetRenderTarget(ID3D11DeviceContext* /*ID3D11DepthStencilView**/);
+	void ClearRenderTarget(ID3D11DeviceContext*, /*ID3D11DepthStencilView**/ float, float, float, float);
+	ID3D11ShaderResourceView* GetShaderResourceView();
 
 	void GetProjectionMatrix(D3DXMATRIX&);
 	void GetOrthoMatrix(D3DXMATRIX&);
@@ -37,12 +38,12 @@ public:
 
 private:
 	int m_textureWidth, m_textureHeight;
-	ID3D10Texture2D* m_renderTargetTexture;
-	ID3D10RenderTargetView* m_renderTargetView;
-	ID3D10ShaderResourceView* m_shaderResourceView;
-	ID3D10Texture2D* m_depthStencilBuffer;
-	ID3D10DepthStencilView* m_depthStencilView;
-	D3D10_VIEWPORT m_viewport;
+	ID3D11Texture2D* m_renderTargetTexture;
+	ID3D11RenderTargetView* m_renderTargetView;
+	ID3D11ShaderResourceView* m_shaderResourceView;
+	ID3D11Texture2D* m_depthStencilBuffer;
+	ID3D11DepthStencilView* m_depthStencilView;
+	D3D11_VIEWPORT m_viewport;
 	D3DXMATRIX m_projectionMatrix;
 	D3DXMATRIX m_orthoMatrix;
 };

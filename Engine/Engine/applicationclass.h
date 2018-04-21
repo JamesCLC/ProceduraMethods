@@ -32,6 +32,7 @@ const float SCREEN_NEAR = 0.1f;
 ///
 #include "modelclass.h"
 #include "textureshaderclass.h"
+#include "rendertextureclass.h"
 #include "convolutionshaderclass.h"
 
 
@@ -49,13 +50,16 @@ public:
 	void Shutdown();
 	bool Frame();
 
-	// Post Processing
-
-	//
-
 private:
 	bool HandleInput(float);
 	bool RenderGraphics();
+
+	// Post Processing
+	bool RendertoTexture();
+	bool DownSampleTexture();
+	bool UpSampleTexture();
+	bool RenderFinalScene();
+	// End Post Processing
 
 private:
 	InputClass* m_Input;
@@ -72,7 +76,7 @@ private:
 	LightClass* m_Light;
 	ModelClass* m_Cube;
 	TextureShaderClass* m_TextureShader;
-
+	RenderTextureClass* m_RenderTexture;
 
 	// Post Processing
 
