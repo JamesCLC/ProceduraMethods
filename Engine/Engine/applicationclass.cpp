@@ -23,8 +23,14 @@ ApplicationClass::ApplicationClass()
 	
 	// Post Processing
 	m_ConvolutionShader = 0;
-	m_OrthoMesh = 0;
+
+	m_SmallWindow = 0;
+	m_BigWindow = 0;
+
 	m_RenderTexture = 0;
+	m_DownSampleTexture = 0;
+	m_PostProcessTexture = 0;
+	m_UpSampleTexture = 0;
 }
 
 
@@ -257,6 +263,52 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 
 	////////// Post Processing ////////////////////
+	// Create the convolution shader object
+	m_ConvolutionShader = new ConvolutionShaderClass;
+	if (!m_ConvolutionShader)
+	{
+		return false;
+	}
+
+	// Initialise the convolution shader
+	result = m_ConvolutionShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the convolution shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+
+	// Create the Small Window
+	m_SmallWindow = new OrthoWindowClass();
+	if (!m_SmallWindow)
+	{
+		return false;
+	}
+
+	// Initialise the Big Window object.
+	result = m_SmallWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, 100, 100);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the small ortho mesh object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the Big Window
+	m_BigWindow = new OrthoWindowClass();
+	if (!m_BigWindow)
+	{
+		return false;
+	}
+
+	// Initialise the Big Window object.
+	result = m_BigWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, 100, 100);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the big ortho mesh object.", L"Error", MB_OK);
+		return false;
+	}
+
 	// Create the render texture
 	m_RenderTexture = new RenderTextureClass();
 	if (!m_RenderTexture)
@@ -272,37 +324,51 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
-
-	// Create the Ortho Mesh
-	m_OrthoMesh = new OrthoWindowClass();
-	if (!m_OrthoMesh)
+	// Create the Down Sample Texture
+	m_DownSampleTexture = new RenderTextureClass();
+	if (!m_DownSampleTexture)
 	{
 		return false;
 	}
 
-	// Initialise the ortho mesh object.
-	result = m_OrthoMesh->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, 100, 100);
+	// Initialise the Down Sample Texture
+	result = m_DownSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
 		return false;
 	}
 
-
-	// Create the convolution shader object
-	m_ConvolutionShader = new ConvolutionShaderClass;
-	if (!m_ConvolutionShader)
+	// Create the Post Processing Texture.
+	m_PostProcessTexture = new RenderTextureClass();
+	if (!m_PostProcessTexture)
 	{
 		return false;
 	}
 
-	// Initialise the convolution shader
-	result = m_ConvolutionShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	// Initialise the Post Processing Texture object.
+	result = m_PostProcessTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the convolution shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the post processing texture object.", L"Error", MB_OK);
 		return false;
 	}
+
+	// Create the  Up Sample Texture
+	m_UpSampleTexture = new RenderTextureClass();
+	if (!m_UpSampleTexture)
+	{
+		return false;
+	}
+
+	// Initialise the Up Sample Texture object.
+	result = m_UpSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
+		return false;
+	}
+
 
 	m_ScreenHeight = screenHeight;
 	m_ScreenWidth = screenWidth;
@@ -432,21 +498,46 @@ void ApplicationClass::Shutdown()
 		m_ConvolutionShader = 0;
 	}
 
-	// Release the ortho mesh object.
-	if (m_OrthoMesh)
+	// Release the ortho mesh objects.
+	if (m_SmallWindow)
 	{
-		m_OrthoMesh->Shutdown();
-		delete m_OrthoMesh;
-		m_OrthoMesh = 0;
+		m_SmallWindow->Shutdown();
+		delete m_SmallWindow;
+		m_SmallWindow = 0;
+	}
+	if (m_BigWindow)
+	{
+		m_BigWindow->Shutdown();
+		delete m_BigWindow;
+		m_BigWindow = 0;
 	}
 
-	// Release the render texture.
+	// Release the render textures.
 	if (m_RenderTexture)
 	{
 		m_RenderTexture->Shutdown();
 		delete m_RenderTexture;
 		m_RenderTexture = 0;
 	}
+	if (m_DownSampleTexture)
+	{
+		m_DownSampleTexture->Shutdown();
+		delete m_DownSampleTexture;
+		m_DownSampleTexture = 0;
+	}
+	if (m_PostProcessTexture)
+	{
+		m_PostProcessTexture->Shutdown();
+		delete m_PostProcessTexture;
+		m_PostProcessTexture = 0;
+	}
+	if (m_UpSampleTexture)
+	{
+		m_UpSampleTexture->Shutdown();
+		delete m_UpSampleTexture;
+		m_UpSampleTexture = 0;
+	}
+
 	///////////////////////////////////////////////////////
 
 	return;
@@ -585,7 +676,7 @@ bool ApplicationClass::RenderGraphics()
 	bool result;
 
 	// Render the complete scene to a texture
-	result = RendertoTexture();
+	result = RenderToTexture();
 	if (!result)
 	{
 		return false;
@@ -643,7 +734,7 @@ bool ApplicationClass::RenderGraphics()
 }
 
 
-bool ApplicationClass::RendertoTexture()
+bool ApplicationClass::RenderToTexture()
 {
 	bool result;
 
@@ -721,14 +812,14 @@ bool ApplicationClass::RenderWindow()
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
 	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = m_OrthoMesh->Render(m_Direct3D->GetDeviceContext(), 50, 50);
+	result = m_SmallWindow->Render(m_Direct3D->GetDeviceContext(), 50, 50);
 	if (!result)
 	{
 		return false;
 	}
 
 	// Render the debug window using the texture shader.
-	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_OrthoMesh->GetIndexCount(), worldMatrix, viewMatrix,
+	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix,
 		orthoMatrix, m_RenderTexture->GetShaderResourceView(), m_ScreenHeight);
 	if (!result)
 	{

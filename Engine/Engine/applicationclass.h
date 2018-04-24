@@ -57,9 +57,12 @@ private:
 	bool RenderGraphics();
 
 	// Post Processing
-	bool RendertoTexture();
-	bool RenderScene();
-	bool RenderWindow();
+	bool RenderToTexture();
+	bool DownScaleTexture();
+	bool ApplyPostProcessing();
+	bool UpScaleTexture();
+	bool RenderScene();		// Needs Removal
+	bool RenderWindow();	// Needs Reworking
 
 private:
 	InputClass* m_Input;
@@ -79,8 +82,9 @@ private:
 
 	// Post Processing
 	ConvolutionShaderClass* m_ConvolutionShader;
-	OrthoWindowClass* m_OrthoMesh;
-	RenderTextureClass* m_RenderTexture;
+
+	OrthoWindowClass* m_SmallWindow, *m_BigWindow;
+	RenderTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_PostProcessTexture, *m_UpSampleTexture;
 
 	float m_ScreenHeight = 0.0f;
 	float m_ScreenWidth = 0.0f;
