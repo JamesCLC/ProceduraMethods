@@ -6,15 +6,11 @@
 
 ConvolutionShaderClass::ConvolutionShaderClass()
 {
-	m_effect = 0;
-	m_technique = 0;
+	m_vertexShader = 0;
+	m_pixelShader = 0;
 	m_layout = 0;
-
-	m_worldMatrixPtr = 0;
-	m_viewMatrixPtr = 0;
-	m_projectionMatrixPtr = 0;
-	m_texturePtr = 0;
-	m_screenHeightPtr = 0;
+	m_sampleState = 0;
+	m_matrixBuffer = 0;
 }
 
 
@@ -28,13 +24,13 @@ ConvolutionShaderClass::~ConvolutionShaderClass()
 }
 
 
-bool ConvolutionShaderClass::Initialize(ID3D10Device* device, HWND hwnd)
+bool ConvolutionShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {
 	bool result;
 
 
-	// Initialize the shader that will be used to draw the model.
-	result = InitializeShader(device, hwnd, L"../Engine/convolution.fx");
+	// Initialize the vertex and pixel shaders.
+	result = InitializeShader(device, hwnd, L"../Engine/convolution.vs", L"../Engine/convolution.ps");
 	if(!result)
 	{
 		return false;
@@ -46,63 +42,101 @@ bool ConvolutionShaderClass::Initialize(ID3D10Device* device, HWND hwnd)
 
 void ConvolutionShaderClass::Shutdown()
 {
-	// Shutdown the shader effect.
+	// Shutdown the shaders and related objects.
 	ShutdownShader();
 
 	return;
 }
 
 
-void ConvolutionShaderClass::Render(ID3D10Device* device, int indexCount, D3DXMATRIX worldMatrix, D3DXMATRIX viewMatrix,
-									 D3DXMATRIX projectionMatrix, ID3D10ShaderResourceView* texture, float screenHeight)
+bool ConvolutionShaderClass::Render(ID3D11DeviceContext* device, int indexCount, D3DXMATRIX worldMatrix, D3DXMATRIX viewMatrix,
+									 D3DXMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, float screenHeight)
 {
+	bool result;
+
 	// Set the shader parameters that it will use for rendering.
-	SetShaderParameters(worldMatrix, viewMatrix, projectionMatrix, texture, screenHeight);
+	result = SetShaderParameters(device, worldMatrix, viewMatrix, projectionMatrix, texture, screenHeight);
+	if (!result)
+	{
+		return false;
+	}
 
 	// Now render the prepared buffers with the shader.
 	RenderShader(device, indexCount);
 
-	return;
+	return true;
 }
 
 
-bool ConvolutionShaderClass::InitializeShader(ID3D10Device* device, HWND hwnd, WCHAR* filename)
+bool ConvolutionShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage;
-	D3D10_INPUT_ELEMENT_DESC polygonLayout[2];
+	ID3D10Blob* vertexShaderBuffer;
+	ID3D10Blob* pixelShaderBuffer;
+	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
 	unsigned int numElements;
-    D3D10_PASS_DESC passDesc;
+	D3D11_SAMPLER_DESC samplerDesc;
+	D3D11_BUFFER_DESC matrixBufferDesc;
 
 
 	// Initialize the error message.
 	errorMessage = 0;
 
-	// Load the shader in from the file.
-	result = D3DX10CreateEffectFromFile(filename, NULL, NULL, "fx_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, 
-										device, NULL, NULL, &m_effect, &errorMessage, NULL);
+	// Compile the vertex shader code.
+	result = D3DX11CompileFromFile(vsFilename, NULL, NULL, "ConvolutionVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL,
+									&vertexShaderBuffer, &errorMessage, NULL);
+
 	if(FAILED(result))
 	{
 		// If the shader failed to compile it should have writen something to the error message.
 		if(errorMessage)
 		{
-			OutputShaderErrorMessage(errorMessage, hwnd, filename);
+			OutputShaderErrorMessage(errorMessage, hwnd, vsFilename);
 		}
 		// If there was nothing in the error message then it simply could not find the shader file itself.
 		else
 		{
-			MessageBox(hwnd, filename, L"Missing Shader File", MB_OK);
+			MessageBox(hwnd, vsFilename, L"Missing Shader File", MB_OK);
 		}
 
 		return false;
 	}
 
-	// Get a pointer to the technique inside the shader.
-	m_technique = m_effect->GetTechniqueByName("ConvolutionTechnique");
-	if(!m_technique)
+	// Compile the pixel shader code.
+	result = D3DX11CompileFromFile(psFilename, NULL, NULL, "ConvolutionPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL,
+									&pixelShaderBuffer, &errorMessage, NULL);
+
+	if (FAILED(result))
+	{
+		// If the shader failed to compile it should have writen something to the error message.
+		if (errorMessage)
+		{
+			OutputShaderErrorMessage(errorMessage, hwnd, vsFilename);
+		}
+		// If there was nothing in the error message then it simply could not find the shader file itself.
+		else
+		{
+			MessageBox(hwnd, vsFilename, L"Missing Shader File", MB_OK);
+		}
+
+		return false;
+	}
+
+	// Create the vertex shader from the buffer.
+	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &m_vertexShader);
+	if (FAILED(result))
 	{
 		return false;
 	}
+
+	// Create the pixel shader from the buffer.
+	result = device->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &m_pixelShader);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 
 	// Now setup the layout of the data that goes into the shader.
 	// This setup needs to match the VertexType stucture in the ModelClass and in the shader.
@@ -111,73 +145,111 @@ bool ConvolutionShaderClass::InitializeShader(ID3D10Device* device, HWND hwnd, W
 	polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	polygonLayout[0].InputSlot = 0;
 	polygonLayout[0].AlignedByteOffset = 0;
-	polygonLayout[0].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+	polygonLayout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	polygonLayout[0].InstanceDataStepRate = 0;
 
 	polygonLayout[1].SemanticName = "TEXCOORD";
 	polygonLayout[1].SemanticIndex = 0;
 	polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	polygonLayout[1].InputSlot = 0;
-	polygonLayout[1].AlignedByteOffset = D3D10_APPEND_ALIGNED_ELEMENT;
-	polygonLayout[1].InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA;
+	polygonLayout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	polygonLayout[1].InstanceDataStepRate = 0;
 
 	// Get a count of the elements in the layout.
     numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
 
-	// Get the description of the first pass described in the shader technique.
-    m_technique->GetPassByIndex(0)->GetDesc(&passDesc);
-
-	// Create the input layout.
-    result = device->CreateInputLayout(polygonLayout, numElements, passDesc.pIAInputSignature, passDesc.IAInputSignatureSize, &m_layout);
-	if(FAILED(result))
+	// Create the vertex input layout.
+	result = device->CreateInputLayout(polygonLayout, numElements, vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(),
+		&m_layout);
+	if (FAILED(result))
 	{
 		return false;
 	}
 
-	// Get pointers to the three matrices inside the shader so we can update them from this class.
-    m_worldMatrixPtr = m_effect->GetVariableByName("worldMatrix")->AsMatrix();
-	m_viewMatrixPtr = m_effect->GetVariableByName("viewMatrix")->AsMatrix();
-    m_projectionMatrixPtr = m_effect->GetVariableByName("projectionMatrix")->AsMatrix();
+	// Release the vertex shader buffer and pixel shader buffer since they are no longer needed.
+	vertexShaderBuffer->Release();
+	vertexShaderBuffer = 0;
 
-	// Get pointer to the texture resource inside the shader.
-	m_texturePtr = m_effect->GetVariableByName("shaderTexture")->AsShaderResource();
+	pixelShaderBuffer->Release();
+	pixelShaderBuffer = 0;
 
-	// Get a pointer to the screen height inside the shader.
-	m_screenHeightPtr = m_effect->GetVariableByName("screenHeight")->AsScalar();
-	
+	// Create a texture sampler state description.
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	// Create the texture sampler state.
+	result = device->CreateSamplerState(&samplerDesc, &m_sampleState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
+	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	matrixBufferDesc.MiscFlags = 0;
+	matrixBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	result = device->CreateBuffer(&matrixBufferDesc, NULL, &m_matrixBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	return true;
 }
 
 
 void ConvolutionShaderClass::ShutdownShader()
 {
-	// Release the pointer to the screen height inside the shader.
-	m_screenHeightPtr = 0;
+	// Release the matrix constant buffer.
+	if (m_matrixBuffer)
+	{
+		m_matrixBuffer->Release();
+		m_matrixBuffer = 0;
+	}
 
-	// Release the pointer to the texture in the shader file.
-	m_texturePtr = 0;
+	// Release the sampler state.
+	if (m_sampleState)
+	{
+		m_sampleState->Release();
+		m_sampleState = 0;
+	}
 
-	// Release the pointers to the matrices inside the shader.
-	m_worldMatrixPtr = 0;
-	m_viewMatrixPtr = 0;
-	m_projectionMatrixPtr = 0;
-
-	// Release the pointer to the shader layout.
-	if(m_layout)
+	// Release the layout.
+	if (m_layout)
 	{
 		m_layout->Release();
 		m_layout = 0;
 	}
 
-	// Release the pointer to the shader technique.
-	m_technique = 0;
-
-	// Release the pointer to the shader.
-	if(m_effect)
+	// Release the pixel shader.
+	if (m_pixelShader)
 	{
-		m_effect->Release();
-		m_effect = 0;
+		m_pixelShader->Release();
+		m_pixelShader = 0;
+	}
+
+	// Release the vertex shader.
+	if (m_vertexShader)
+	{
+		m_vertexShader->Release();
+		m_vertexShader = 0;
 	}
 
 	return;
@@ -220,46 +292,66 @@ void ConvolutionShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, 
 }
 
 
-void ConvolutionShaderClass::SetShaderParameters(D3DXMATRIX worldMatrix, D3DXMATRIX viewMatrix, D3DXMATRIX projectionMatrix,
-												  ID3D10ShaderResourceView* texture, float screenHeight)
+bool ConvolutionShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, D3DXMATRIX worldMatrix, D3DXMATRIX viewMatrix, D3DXMATRIX projectionMatrix,
+												  ID3D11ShaderResourceView* texture, float screenHeight)
 {
-	// Set the world matrix variable inside the shader.
-    m_worldMatrixPtr->SetMatrix((float*)&worldMatrix);
+	HRESULT result;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	unsigned int bufferNumber;
+	MatrixBufferType* dataPtr;
 
-	// Set the view matrix variable inside the shader.
-	m_viewMatrixPtr->SetMatrix((float*)&viewMatrix);
+	// Transpose the matrices to prepare them for the shader.
+	D3DXMatrixTranspose(&worldMatrix, &worldMatrix);
+	D3DXMatrixTranspose(&viewMatrix, &viewMatrix);
+	D3DXMatrixTranspose(&projectionMatrix, &projectionMatrix);
 
-	// Set the projection matrix variable inside the shader.
-    m_projectionMatrixPtr->SetMatrix((float*)&projectionMatrix);
+	// Lock the constant buffer so it can be written to.
+	result = deviceContext->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+	{
+		return false;
+	}
 
-	// Bind the texture.
-	m_texturePtr->SetResource(texture);
+	// Get a pointer to the data in the constant buffer.
+	dataPtr = (MatrixBufferType*)mappedResource.pData;
 
-	// Set the screen height inside the shader.		
-	m_screenHeightPtr->SetFloat(screenHeight);
+	// Copy the matrices into the constant buffer.
+	dataPtr->world = worldMatrix;
+	dataPtr->view = viewMatrix;
+	dataPtr->projection = projectionMatrix;
 
-	return;
+	// Unlock the constant buffer.
+	deviceContext->Unmap(m_matrixBuffer, 0);
+
+	// Set the position of the constant buffer in the vertex shader.
+	bufferNumber = 0;
+
+	// Now set the constant buffer in the vertex shader with the updated values.
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
+
+	// Set the textures in the pixel shader.
+	//deviceContext->PSSetShaderResources(0, 1, &sandTexture);
+	//deviceContext->PSSetShaderResources(1, 1, &slopeTexture);
+	////////////////////
+
+	return true;
 }
 
 
-void ConvolutionShaderClass::RenderShader(ID3D10Device* device, int indexCount)
+void ConvolutionShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 {
-    D3D10_TECHNIQUE_DESC techniqueDesc;
-	unsigned int i;
-	
+	// Set the vertex input layout.
+	deviceContext->IASetInputLayout(m_layout);
 
-	// Set the input layout.
-	device->IASetInputLayout(m_layout);
+	// Set the vertex and pixel shaders that will be used to render this triangle.
+	deviceContext->VSSetShader(m_vertexShader, NULL, 0);
+	deviceContext->PSSetShader(m_pixelShader, NULL, 0);
 
-	// Get the description structure of the technique from inside the shader so it can be used for rendering.
-    m_technique->GetDesc(&techniqueDesc);
+	// Set the sampler state in the pixel shader.
+	deviceContext->PSSetSamplers(0, 1, &m_sampleState);
 
-    // Go through each pass in the technique (should be just one currently) and render the triangles.
-	for(i=0; i<techniqueDesc.Passes; ++i)
-    {
-        m_technique->GetPassByIndex(i)->Apply(0);
-        device->DrawIndexed(indexCount, 0, 0);
-    }
+	// Render the mesh.
+	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 	return;
 }

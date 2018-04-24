@@ -22,6 +22,8 @@ ApplicationClass::ApplicationClass()
 	m_TextureShader = 0;
 	
 	// Post Processing
+	m_ConvolutionShader = 0;
+	m_OrthoMesh = 0;
 	m_RenderTexture = 0;
 }
 
@@ -263,12 +265,47 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialise the render texture object.
-	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
 		return false;
 	}
+
+
+	// Create the Ortho Mesh
+	m_OrthoMesh = new OrthoWindowClass();
+	if (!m_OrthoMesh)
+	{
+		return false;
+	}
+
+	// Initialise the ortho mesh object.
+	result = m_OrthoMesh->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight, 100, 100);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+
+	// Create the convolution shader object
+	m_ConvolutionShader = new ConvolutionShaderClass;
+	if (!m_ConvolutionShader)
+	{
+		return false;
+	}
+
+	// Initialise the convolution shader
+	result = m_ConvolutionShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the convolution shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	m_ScreenHeight = screenHeight;
+	m_ScreenWidth = screenWidth;
 
 	///////////////////////////////////////////////
 
@@ -385,6 +422,24 @@ void ApplicationClass::Shutdown()
 		m_TextureShader = 0;
 	}
 
+
+	//////////////////// PostProcessing ////////////////////
+	// Release the convolution shader object.
+	if (m_ConvolutionShader)
+	{
+		m_ConvolutionShader->Shutdown();
+		delete m_ConvolutionShader;
+		m_ConvolutionShader = 0;
+	}
+
+	// Release the ortho mesh object.
+	if (m_OrthoMesh)
+	{
+		m_OrthoMesh->Shutdown();
+		delete m_OrthoMesh;
+		m_OrthoMesh = 0;
+	}
+
 	// Release the render texture.
 	if (m_RenderTexture)
 	{
@@ -392,6 +447,7 @@ void ApplicationClass::Shutdown()
 		delete m_RenderTexture;
 		m_RenderTexture = 0;
 	}
+	///////////////////////////////////////////////////////
 
 	return;
 }
@@ -451,6 +507,7 @@ bool ApplicationClass::Frame()
 	return result;
 }
 
+
 bool ApplicationClass::HandleInput(float frameTime)
 {
 	bool keyDown, result;
@@ -468,9 +525,9 @@ bool ApplicationClass::HandleInput(float frameTime)
 	keyDown = m_Input->IsXPressed();
 	m_Terrain->SmoothTerrain(m_Direct3D->GetDevice(), keyDown);
 
-	if (keyDown = m_Input->IsCPressed())
+	if (keyDown = m_Input->IsCPressed())												// CHANGE THIS SHIT, BOI!
 	m_Terrain->FlattenPeaks(m_Direct3D->GetDevice(), keyDown);
-
+	///
 
 	keyDown = m_Input->IsLeftPressed();
 	m_Position->TurnLeft(keyDown);
@@ -527,9 +584,33 @@ bool ApplicationClass::RenderGraphics()
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
 
+	// Render the complete scene to a texture
+	result = RendertoTexture();
+	if (!result)
+	{
+		return false;
+	}
+
 	// Clear the scene.
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
+	// Render the scene as normal to the back bufer.
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the debug window
+	//result = RenderWindow();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+	
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
@@ -539,58 +620,6 @@ bool ApplicationClass::RenderGraphics()
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
-	// Render the complete scene to a texture
-	result = RendertoTexture();
-	if (!result)
-	{
-		return false;
-	}
-
-	result = DownSampleTexture();
-	if (!result)
-	{
-		return false;
-	}
-
-	result = UpSampleTexture();
-	if (!result)
-	{
-		return false;
-	}
-
-	result = RenderFinalScene();
-	if (!result)
-	{
-		return false;
-	}
-
-	//// Render the terrain buffers.
-	//m_Terrain->Render(m_Direct3D->GetDeviceContext());
-
-	//// Render the terrain using the terrain shader.
-	//result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
-	//								 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-	//								 m_Terrain->GetSlopeTexture());
-	//if(!result)
-	//{
-	//	return false;
-	//}
-
-	//// Render the model buffers.
-	//m_Cube->Render(m_Direct3D->GetDeviceContext());
-
-	//// Render the cube using the texture shader.
-	//result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
-	//if (!result)
-	//{
-	//	return false;
-	//}
-
-	///
-
-	// Turn off the Z buffer to begin all 2D rendering.
-	m_Direct3D->TurnZBufferOff();
-		
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOnAlphaBlending();
 
@@ -613,70 +642,106 @@ bool ApplicationClass::RenderGraphics()
 	return true;
 }
 
+
 bool ApplicationClass::RendertoTexture()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
-
 	bool result;
 
 	// Set the render target to be the render to texture.
-	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
+	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
 
 	// Clear the render to texture.
-	m_RenderTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_RenderTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+
+	// Render the scene now and it will draw to the render to texture instead of the back buffer.
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	return true;
+}
+
+
+bool ApplicationClass::RenderScene()
+{
+
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	bool result;
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
 	// Get the world, view, and projection matrices from the camera and d3d objects.
-	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
-	////////// Render the Scene //////////
-		// Render the terrain buffers.
-		m_Terrain->Render(m_Direct3D->GetDeviceContext());
+	// Render the terrain buffers.
+	m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
-		// Render the terrain using the terrain shader.
-		result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-			m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-			m_Terrain->GetSlopeTexture());
-		if (!result)
-		{
-			return false;
-		}
+	// Render the terrain using the terrain shader.
+	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+		m_Terrain->GetSlopeTexture());
+	if (!result)
+	{
+		return false;
+	}
 
-		// Render the model buffers.
-		m_Cube->Render(m_Direct3D->GetDeviceContext());
+	// Render the model buffers.
+	m_Cube->Render(m_Direct3D->GetDeviceContext());
 
-		// Render the cube using the texture shader.
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
-		if (!result)
-		{
-			return false;
-		}
-	//////////////////// Render Scene ////////////////////
-
-	// Reset the render target back to the original back buffer and not the render to texture anymore.
-	m_Direct3D->SetBackBufferRenderTarget();
-
-	// Reset the viewport back to the original.
-	m_Direct3D->ResetViewport();
+	// Render the cube using the texture shader.
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
 
-bool ApplicationClass::DownSampleTexture()
+
+bool ApplicationClass::RenderWindow()
 {
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	bool result;
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Get the world, view, and ortho matrices from the camera and d3d objects.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	result = m_OrthoMesh->Render(m_Direct3D->GetDeviceContext(), 50, 50);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the debug window using the texture shader.
+	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_OrthoMesh->GetIndexCount(), worldMatrix, viewMatrix,
+		orthoMatrix, m_RenderTexture->GetShaderResourceView(), m_ScreenHeight);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	m_Direct3D->EndScene();
+
 	return true;
 }
 
-bool ApplicationClass::UpSampleTexture()
-{
-	return true;
-}
 
-bool ApplicationClass::RenderFinalScene()
-{
-	return true;
-}

@@ -29,11 +29,13 @@ const float SCREEN_NEAR = 0.1f;
 #include "textclass.h"
 #include "terrainshaderclass.h"
 #include "lightclass.h"
-///
 #include "modelclass.h"
 #include "textureshaderclass.h"
+
+///
 #include "rendertextureclass.h"
 #include "convolutionshaderclass.h"
+#include "orthowindowclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,10 +58,8 @@ private:
 
 	// Post Processing
 	bool RendertoTexture();
-	bool DownSampleTexture();
-	bool UpSampleTexture();
-	bool RenderFinalScene();
-	// End Post Processing
+	bool RenderScene();
+	bool RenderWindow();
 
 private:
 	InputClass* m_Input;
@@ -77,10 +77,13 @@ private:
 	ModelClass* m_Cube;
 	TextureShaderClass* m_TextureShader;
 
-
 	// Post Processing
+	ConvolutionShaderClass* m_ConvolutionShader;
+	OrthoWindowClass* m_OrthoMesh;
 	RenderTextureClass* m_RenderTexture;
 
+	float m_ScreenHeight = 0.0f;
+	float m_ScreenWidth = 0.0f;
 };
 
 #endif

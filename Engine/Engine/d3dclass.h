@@ -49,19 +49,26 @@ public:
 	void GetVideoCardInfo(char*, int&);
 
 	// Post Processing
-	void SetBackBufferRenderTarget();
+	//void SetBackBufferRenderTarget();
 	void ResetViewport();
+
+	ID3D11DepthStencilView* GetDepthStencilView();
+	void SetBackBufferRenderTarget();
+
 	//
 
 	void TurnZBufferOn();
 	void TurnZBufferOff();
+
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
 
 private:
 	bool m_vsync_enabled;
+
 	int m_videoCardMemory;
 	char m_videoCardDescription[128];
+
 	IDXGISwapChain* m_swapChain;
 	ID3D11Device* m_device;
 	ID3D11DeviceContext* m_deviceContext;
@@ -70,15 +77,17 @@ private:
 	ID3D11DepthStencilState* m_depthStencilState;
 	ID3D11DepthStencilView* m_depthStencilView;
 	ID3D11RasterizerState* m_rasterState;
+
 	D3DXMATRIX m_projectionMatrix;
 	D3DXMATRIX m_worldMatrix;
 	D3DXMATRIX m_orthoMatrix;
+
 	ID3D11DepthStencilState* m_depthDisabledStencilState;
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
 
 	// Post Processing
-	D3D11_VIEWPORT m_viewport;
+	//D3D11_VIEWPORT m_viewport;
 	//
 };
 
