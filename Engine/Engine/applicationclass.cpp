@@ -385,6 +385,14 @@ void ApplicationClass::Shutdown()
 		m_TextureShader = 0;
 	}
 
+	// Release the render texture.
+	if (m_RenderTexture)
+	{
+		m_RenderTexture->Shutdown();
+		delete m_RenderTexture;
+		m_RenderTexture = 0;
+	}
+
 	return;
 }
 
@@ -531,34 +539,52 @@ bool ApplicationClass::RenderGraphics()
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
-
-	RendertoTexture();
-	DownSampleTexture();
-	UpSampleTexture();
-	RenderFinalScene();
-
-
-	// Render the terrain buffers.
-	m_Terrain->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
-									 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-									 m_Terrain->GetSlopeTexture());
-	if(!result)
-	{
-		return false;
-	}
-
-	// Render the model buffers.
-	m_Cube->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	// Render the complete scene to a texture
+	result = RendertoTexture();
 	if (!result)
 	{
 		return false;
 	}
+
+	result = DownSampleTexture();
+	if (!result)
+	{
+		return false;
+	}
+
+	result = UpSampleTexture();
+	if (!result)
+	{
+		return false;
+	}
+
+	result = RenderFinalScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	//// Render the terrain buffers.
+	//m_Terrain->Render(m_Direct3D->GetDeviceContext());
+
+	//// Render the terrain using the terrain shader.
+	//result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
+	//								 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+	//								 m_Terrain->GetSlopeTexture());
+	//if(!result)
+	//{
+	//	return false;
+	//}
+
+	//// Render the model buffers.
+	//m_Cube->Render(m_Direct3D->GetDeviceContext());
+
+	//// Render the cube using the texture shader.
+	//result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
 	///
 
@@ -587,9 +613,11 @@ bool ApplicationClass::RenderGraphics()
 	return true;
 }
 
-void ApplicationClass::RendertoTexture()
+bool ApplicationClass::RendertoTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+
+	bool result;
 
 	// Set the render target to be the render to texture.
 	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
@@ -605,23 +633,29 @@ void ApplicationClass::RendertoTexture()
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
-	//// Rotate the world matrix by the rotation value so that the cube will spin.
-	//D3DXMatrixRotationY(&worldMatrix, rotation);
+	////////// Render the Scene //////////
+		// Render the terrain buffers.
+		m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
-	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	//m_Model->Render(m_Direct3D->GetDevice());
+		// Render the terrain using the terrain shader.
+		result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+			m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+			m_Terrain->GetSlopeTexture());
+		if (!result)
+		{
+			return false;
+		}
 
-	//// Render the model using the texture shader.
-	//m_TextureShader->Render(m_Direct3D->GetDevice(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
+		// Render the model buffers.
+		m_Cube->Render(m_Direct3D->GetDeviceContext());
 
-	//// Use the translation matrix to translate the second cube.
-	//D3DXMatrixTranslation(&worldMatrix, 1.0f, 2.0f, 2.0f);
-
-	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	//m_Model2->Render(m_D3D->GetDevice());
-
-	//// Render the model using the texture shader.
-	//m_TextureShader->Render(m_D3D->GetDevice(), m_Model2->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model2->GetTexture());
+		// Render the cube using the texture shader.
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+	//////////////////// Render Scene ////////////////////
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_Direct3D->SetBackBufferRenderTarget();
@@ -629,17 +663,20 @@ void ApplicationClass::RendertoTexture()
 	// Reset the viewport back to the original.
 	m_Direct3D->ResetViewport();
 
-	return;
+	return true;
 }
 
-void ApplicationClass::DownSampleTexture()
+bool ApplicationClass::DownSampleTexture()
 {
+	return true;
 }
 
-void ApplicationClass::UpSampleTexture()
+bool ApplicationClass::UpSampleTexture()
 {
+	return true;
 }
 
-void ApplicationClass::RenderFinalScene()
+bool ApplicationClass::RenderFinalScene()
 {
+	return true;
 }

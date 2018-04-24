@@ -55,10 +55,10 @@ private:
 	bool RenderGraphics();
 
 	// Post Processing
-	void RendertoTexture();
-	void DownSampleTexture();
-	void UpSampleTexture();
-	void RenderFinalScene();
+	bool RendertoTexture();
+	bool DownSampleTexture();
+	bool UpSampleTexture();
+	bool RenderFinalScene();
 	// End Post Processing
 
 private:
