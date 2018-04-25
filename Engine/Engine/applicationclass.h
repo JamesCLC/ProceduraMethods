@@ -58,9 +58,9 @@ private:
 
 	// Post Processing
 	bool RenderToTexture();
-	bool DownScaleTexture();
+	bool DownScale();
 	bool ApplyPostProcessing();
-	bool UpScaleTexture();
+	bool UpScale();
 	bool RenderScene();		// Needs Removal
 	bool RenderWindow();	// Needs Reworking
 
