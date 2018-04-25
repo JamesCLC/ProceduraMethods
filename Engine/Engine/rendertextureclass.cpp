@@ -31,6 +31,11 @@ bool RenderTextureClass::Initialize(ID3D11Device* device, int textureWidth, int 
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 
+	///
+	m_textureWidth = textureWidth;
+	m_textureHeight = textureHeight;
+	///
+
 
 	// Initialize the render target texture description.
 	ZeroMemory(&textureDesc, sizeof(textureDesc));
@@ -137,4 +142,14 @@ void RenderTextureClass::ClearRenderTarget(ID3D11DeviceContext* deviceContext, I
 ID3D11ShaderResourceView* RenderTextureClass::GetShaderResourceView()
 {
 	return m_shaderResourceView;
+}
+
+float RenderTextureClass::GetTextureWidth()
+{
+	return m_textureWidth;
+}
+
+float RenderTextureClass::GetTextureHeight()
+{
+	return m_textureHeight;
 }

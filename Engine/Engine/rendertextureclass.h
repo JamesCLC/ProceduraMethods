@@ -28,10 +28,15 @@ public:
 	void ClearRenderTarget(ID3D11DeviceContext*, ID3D11DepthStencilView*, float, float, float, float);
 	ID3D11ShaderResourceView* GetShaderResourceView();
 
+	float GetTextureWidth();
+	float GetTextureHeight();
+
 private:
 	ID3D11Texture2D* m_renderTargetTexture;
 	ID3D11RenderTargetView* m_renderTargetView;
 	ID3D11ShaderResourceView* m_shaderResourceView;
+
+	float m_textureWidth, m_textureHeight;
 };
 
 #endif

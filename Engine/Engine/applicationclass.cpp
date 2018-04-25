@@ -390,11 +390,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
 		return false;
 	}
-
-
-	m_ScreenHeight = screenHeight;
-	m_ScreenWidth = screenWidth;
-
 	///////////////////////////////////////////////
 
 	return true;
@@ -739,14 +734,7 @@ bool ApplicationClass::RenderGraphics()
 		return false;
 	}
 
-	// Render the debug window
-	//result = RenderWindow();
-	//if (!result)
-	//{
-	//	return false;
-	//}
-
-	//////////////////// Render UI ////////////////////
+	////////////////////// Render UI ////////////////////
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 
 	// Turn off the Z buffer to begin all 2D rendering.
@@ -786,14 +774,14 @@ bool ApplicationClass::RenderGraphics()
 
 bool ApplicationClass::RenderSceneToTexture()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
 	// Set the render target to be the render to texture.
-	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView()); // Remove the depth stencil veiw?
+	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
 
 	// Clear the render to texture.
-	m_RenderTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+	m_RenderTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -802,6 +790,8 @@ bool ApplicationClass::RenderSceneToTexture()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+
+	m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the scene now and it will draw to the render to texture instead of the back buffer.
 	//Render the terrain using the terrain shader.
@@ -817,7 +807,8 @@ bool ApplicationClass::RenderSceneToTexture()
 	m_Cube->Render(m_Direct3D->GetDeviceContext());
 	
 	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix,
+		viewMatrix, projectionMatrix, m_Cube->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -834,7 +825,7 @@ bool ApplicationClass::RenderSceneToTexture()
 
 bool ApplicationClass::DownScaleTexture()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
 
@@ -842,17 +833,20 @@ bool ApplicationClass::DownScaleTexture()
 	m_DownSampleTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
 
 	// Clear the render to texture.
-	m_DownSampleTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 1.0f, 0.0f, 1.0f);
+	m_DownSampleTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
-	m_Camera->GetViewMatrix(viewMatrix);
+	//m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
+	D3DXMatrixIdentity(&viewMatrix);
+	viewMatrix._43 = 0.1f;
+
 	// Get the ortho matrix from the render to texture since texture has different dimensions being that it is smaller.
-	//m_DownSampleTexture->GetOrthoMatrix(orthoMatrix);
+	m_Direct3D->GetOrthoMatrix(projectionMatrix);
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
@@ -861,8 +855,8 @@ bool ApplicationClass::DownScaleTexture()
 	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the small ortho window using the texture shader and the render to texture of the scene as the texture resource.
-	result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-		m_DownSampleTexture->GetShaderResourceView());
+	result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_RenderTexture->GetShaderResourceView());
 	if (!result)
 	{
 		return false;
@@ -882,107 +876,116 @@ bool ApplicationClass::DownScaleTexture()
 
 bool ApplicationClass::RenderConvolutionToTexture()
 {
-	//D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
-	//float screenSizeX;
-	//bool result;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	float screenSizeX;
+	bool result;
 
 
-	//// Store the screen width in a float that will be used in the horizontal blur shader.
-	//screenSizeX = (float)m_ConvolutionTexture->GetTextureWidth();
+	// Store the screen width in a float that will be used in the horizontal blur shader.
+	screenSizeX = (float)m_ConvolutionTexture->GetTextureWidth();
 
-	//// Set the render target to be the render to texture.
-	//m_ConvolutionTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
 
-	//// Clear the render to texture.
-	//m_ConvolutionTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+	// Set the render target to be the render to texture.
+	m_ConvolutionTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
 
-	//// Generate the view matrix based on the camera's position.
-	//m_Camera->Render();
+	// Clear the render to texture.
+	m_ConvolutionTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
 
-	//// Get the world and view matrices from the camera and d3d objects.
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world and view matrices from the camera and d3d objects.
 	//m_Camera->GetViewMatrix(viewMatrix);
-	//m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
 
-	//// Get the ortho matrix from the render to texture since texture has different dimensions.
-	//m_ConvolutionTexture->GetOrthoMatrix(orthoMatrix);
+	D3DXMatrixIdentity(&viewMatrix);
+	viewMatrix._43 = 0.1f;
 
-	//// Turn off the Z buffer to begin all 2D rendering.
-	//m_Direct3D->TurnZBufferOff();
+	// Get the ortho matrix from the render to texture since texture has different dimensions.
+	m_Direct3D->GetOrthoMatrix(projectionMatrix);
 
-	//// Put the small ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	//m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
 
-	//// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
+	// Put the small ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
 	//result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-	//	m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
-	//if (!result)
-	//{
-	//	return false;
-	//}
+		//m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
 
-	//// Turn the Z buffer back on now that all 2D rendering has completed.
-	//m_Direct3D->TurnZBufferOn();
+	result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, m_DownSampleTexture->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
 
-	//// Reset the render target back to the original back buffer and not the render to texture anymore.
-	//m_Direct3D->SetBackBufferRenderTarget();
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
 
-	//// Reset the viewport back to the original.
-	//m_Direct3D->ResetViewport();
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_Direct3D->ResetViewport();
 
 	return true;
 }
 
 bool ApplicationClass::UpScaleTexture()
 {
-	//D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
-	//bool result;
+	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	bool result;
 
+	// Set the render target to be the render to texture.
+	m_UpSampleTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
 
-	//// Set the render target to be the render to texture.
-	//m_UpSampleTexture->SetRenderTarget(m_Direct3D->GetDeviceContext());
+	// Clear the render to texture.
+	m_UpSampleTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView(), 0.0f, 1.0f, 1.0f, 1.0f);
 
-	//// Clear the render to texture.
-	//m_UpSampleTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
 
-	//// Generate the view matrix based on the camera's position.
-	//m_Camera->Render();
-
-	//// Get the world and view matrices from the camera and d3d objects.
+	// Get the world and view matrices from the camera and d3d objects.
 	//m_Camera->GetViewMatrix(viewMatrix);
-	//m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
 
-	//// Get the ortho matrix from the render to texture since texture has different dimensions.
-	//m_UpSampleTexture->GetOrthoMatrix(orthoMatrix);
+	D3DXMatrixIdentity(&viewMatrix);
+	viewMatrix._43 = 0.1f;
 
-	//// Turn off the Z buffer to begin all 2D rendering.
-	//m_Direct3D->TurnZBufferOff();
+	// Get the ortho matrix from the render to texture since texture has different dimensions.
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
 
-	//// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	//m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
 
-	//// Render the full screen ortho window using the texture shader and the small sized final blurred render to texture resource.
-	//result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-	//	m_ConvolutionTexture->GetShaderResourceView());
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
 
-	//// Turn the Z buffer back on now that all 2D rendering has completed.
-	//m_Direct3D->TurnZBufferOn();
+	// Render the full screen ortho window using the texture shader and the small sized final blurred render to texture resource.
+	result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), 
+		worldMatrix, viewMatrix, orthoMatrix, m_ConvolutionTexture->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
 
-	//// Reset the render target back to the original back buffer and not the render to texture anymore.
-	//m_Direct3D->SetBackBufferRenderTarget();
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
 
-	//// Reset the viewport back to the original.
-	//m_Direct3D->ResetViewport();
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_Direct3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_Direct3D->ResetViewport();
 
 	return true;
 }
 
 bool ApplicationClass::Render2DTextureScene()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
 	// Turn off the Z buffer to begin all 2D rendering.
@@ -990,19 +993,19 @@ bool ApplicationClass::Render2DTextureScene()
 
 	// Get the world, view, and ortho matrices from the camera and d3d objects.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+	//m_Camera->GetViewMatrix(viewMatrix);
+
+	D3DXMatrixIdentity(&viewMatrix);
+	viewMatrix._43 = 0.1f;
+
+	m_Direct3D->GetOrthoMatrix(projectionMatrix);		// Using an orthographic projection.
 
 	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
-	if (!result)
-	{
-		return false;
-	}
+	result = m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
 
-	// Render the debug window using the texture shader.	//CHANGE THIS, BOI
-	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix,
-		orthoMatrix, m_RenderTexture->GetShaderResourceView(), m_ScreenHeight);
+	// Debug - Render the ortho window with the processed texture onto the screen using the basic shader.
+	result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, m_UpSampleTexture->GetShaderResourceView());
 	if (!result)
 	{
 		return false;
@@ -1018,7 +1021,6 @@ bool ApplicationClass::Render2DTextureScene()
 }
 
 // Scrapped function that just rendered the scene normally.
-
 //bool ApplicationClass::RenderScene()
 //{
 //
