@@ -11,7 +11,13 @@ cbuffer MatrixBuffer
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-	float screenHeight;
+
+};
+
+cbuffer ScreenSizeBuffer
+{
+    float screenHeight;
+    float3 padding;
 };
 
 
@@ -26,7 +32,6 @@ struct VertexInputType
 
 struct PixelInputType
 {
-    
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
 		float2 texCoord1 : TEXCOORD1;
@@ -46,7 +51,7 @@ struct PixelInputType
 ////////////////////////////////////////////////////////////////////////////////
 PixelInputType ConvolutionVertexShader(VertexInputType input)
 {
-     PixelInputType output;
+    PixelInputType output;
     float texelSize;
 
 	// Change the position vector to be 4 units for proper matrix calculations.

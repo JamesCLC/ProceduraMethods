@@ -911,11 +911,11 @@ bool ApplicationClass::RenderConvolutionToTexture()
 	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
-	//result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-		//m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
+	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
 
-	result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, m_DownSampleTexture->GetShaderResourceView());
+	/*result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(),
+		worldMatrix, viewMatrix, projectionMatrix, m_DownSampleTexture->GetShaderResourceView());*/
 	if (!result)
 	{
 		return false;

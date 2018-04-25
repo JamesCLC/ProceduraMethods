@@ -73,5 +73,10 @@ float4 ConvolutionPixelShader(PixelInputType input) : SV_TARGET
 	// Set the alpha channel to one.
 	color.a = 1.0f;
 
+
+	// Debug
+	//color = shaderTexture.Sample(SampleType, input.tex);
+
+
     return color;
 }

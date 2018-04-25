@@ -11,6 +11,8 @@ ConvolutionShaderClass::ConvolutionShaderClass()
 	m_layout = 0;
 	m_sampleState = 0;
 	m_matrixBuffer = 0;
+
+	m_screenSizeBuffer = 0;
 }
 
 
@@ -78,6 +80,7 @@ bool ConvolutionShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, W
 	unsigned int numElements;
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_BUFFER_DESC matrixBufferDesc;
+	D3D11_BUFFER_DESC screenSizeBufferDesc;
 
 
 	// Initialize the error message.
@@ -211,6 +214,22 @@ bool ConvolutionShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, W
 		return false;
 	}
 
+	// Setup the description of the dynamic screen size constant buffer that is in the vertex shader.
+	screenSizeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	screenSizeBufferDesc.ByteWidth = sizeof(ScreenSizeBufferType);
+	screenSizeBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	screenSizeBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	screenSizeBufferDesc.MiscFlags = 0;
+	screenSizeBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	result = device->CreateBuffer(&screenSizeBufferDesc, NULL, &m_screenSizeBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+
 	return true;
 }
 
@@ -222,6 +241,13 @@ void ConvolutionShaderClass::ShutdownShader()
 	{
 		m_matrixBuffer->Release();
 		m_matrixBuffer = 0;
+	}
+
+	// Release the screen size constant buffer.
+	if (m_screenSizeBuffer)
+	{
+		m_screenSizeBuffer->Release();
+		m_screenSizeBuffer = 0;
 	}
 
 	// Release the sampler state.
@@ -299,6 +325,7 @@ bool ConvolutionShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCont
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	unsigned int bufferNumber;
 	MatrixBufferType* dataPtr;
+	ScreenSizeBufferType* dataPtr2;
 
 	// Transpose the matrices to prepare them for the shader.
 	D3DXMatrixTranspose(&worldMatrix, &worldMatrix);
@@ -320,6 +347,7 @@ bool ConvolutionShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCont
 	dataPtr->view = viewMatrix;
 	dataPtr->projection = projectionMatrix;
 
+
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_matrixBuffer, 0);
 
@@ -329,10 +357,35 @@ bool ConvolutionShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCont
 	// Now set the constant buffer in the vertex shader with the updated values.
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
 
+	///
+	// Lock the screen size constant buffer so it can be written to.
+	result = deviceContext->Map(m_screenSizeBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	// Get a pointer to the data in the constant buffer.
+	dataPtr2 = (ScreenSizeBufferType*)mappedResource.pData;
+
+	// Copy the data into the constant buffer.
+	dataPtr2->screenHeight = screenHeight;
+	dataPtr2->padding = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	// Unlock the constant buffer.
+	deviceContext->Unmap(m_screenSizeBuffer, 0);
+
+	// Set the position of the constant buffer in the vertex shader.
+	bufferNumber = 1;
+
+	// Now set the constant buffer in the vertex shader with the updated values.
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_screenSizeBuffer);
+
+	///
+
 	// Set the textures in the pixel shader.
-	//deviceContext->PSSetShaderResources(0, 1, &sandTexture);
-	//deviceContext->PSSetShaderResources(1, 1, &slopeTexture);
-	////////////////////
+	deviceContext->PSSetShaderResources(0, 1, &texture);
+
 
 	return true;
 }
