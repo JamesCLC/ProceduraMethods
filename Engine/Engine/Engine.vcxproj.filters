@@ -90,6 +90,9 @@
     <ClCompile Include="orthowindowclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="basicshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -164,6 +167,9 @@
     <ClInclude Include="orthowindowclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="basicshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -188,6 +194,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="convolution.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="basic.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="basic.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

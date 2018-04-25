@@ -33,6 +33,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "textureshaderclass.h"
 
 ///
+#include "basicshaderclass.h"
 #include "rendertextureclass.h"
 #include "convolutionshaderclass.h"
 #include "orthowindowclass.h"
@@ -57,12 +58,12 @@ private:
 	bool RenderGraphics();
 
 	// Post Processing
-	bool RenderToTexture();
-	bool DownScale();
-	bool ApplyPostProcessing();
-	bool UpScale();
-	bool RenderScene();		// Needs Removal
-	bool RenderWindow();	// Needs Reworking
+	bool RenderSceneToTexture();
+	bool DownScaleTexture();
+	bool RenderConvolutionToTexture();
+	bool UpScaleTexture();
+	//bool RenderScene();				// Needs Removal
+	bool Render2DTextureScene();		// Needs Reworking
 
 private:
 	InputClass* m_Input;
@@ -81,10 +82,11 @@ private:
 	TextureShaderClass* m_TextureShader;
 
 	// Post Processing
+	BasicShaderClass* m_BasicShader;					// Todo: Initialiese, make, Inisitalise, cleanup.
 	ConvolutionShaderClass* m_ConvolutionShader;
 
-	OrthoWindowClass* m_SmallWindow, *m_BigWindow;
-	RenderTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_PostProcessTexture, *m_UpSampleTexture;
+	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
+	RenderTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_ConvolutionTexture, *m_UpSampleTexture;
 
 	float m_ScreenHeight = 0.0f;
 	float m_ScreenWidth = 0.0f;
