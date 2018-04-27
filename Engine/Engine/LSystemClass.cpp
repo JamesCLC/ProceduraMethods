@@ -37,7 +37,7 @@ void LSystemClass::Generate(int itterations)
 				// Primary Rule
 				//temp.append("F[+F]F[-F]F");
 
-				temp.append("[FF+[+F-F-F]-[-F+F+F]");
+				temp.append("[FF+[<+F-F-F]-[>-F+F+F]");
 				
 				//////// Tested Rules ////////
 				//temp.append("F[+F][-F[-F]F]F[+F][-F]");

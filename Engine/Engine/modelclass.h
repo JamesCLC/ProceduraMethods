@@ -26,8 +26,8 @@ using namespace std;
 #include "textureclass.h"
 
 // Angle Definitions in Radians
-#define _22_5_DEGREES_POS_ 0.3926991;
-#define _22_5_DEGREES_NEG_ 5.8904862;
+#define _22_5_DEGREES_POS_ 0.3926991
+#define _22_5_DEGREES_NEG_ 5.8904862
 #define _25_DEGREES_POS_ 0.436332f
 #define _25_DEGREES_NEG_ 5.84685f
 #define _30_DEGREES_POS_ 0.523599f
