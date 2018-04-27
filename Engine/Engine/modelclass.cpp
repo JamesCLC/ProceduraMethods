@@ -388,31 +388,26 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	std::stack<D3DXMATRIX> MatrixStack;
 
 	// Define our translation matricies.
-	// Noticable gaps for debugging
 	D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
 	D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
 
-	// Actual matricies to keep the cubes within a sensible distance of each other
-	//D3DXMatrixTranslation(&m_translate_1, 0.0f, 1.0f, 0.0f);	// Translate - Ensure Rotation around the edge, not the centre.
-	//D3DXMatrixTranslation(&m_translate_2, 0.0f, 2.0f, 0.0f);	// Translate - One Cube's Width so the cubes move out and don't overlap.
 
-	//D3DXMatrixRotationX(&m_rotate, 0.3926991);				// Positive 22.5 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.8904862);				// Negative 22.5 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, _22_5_DEGREES_POS_);				// Positive 22.5 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, _22_5_DEGREES_NEG_);				// Negative 22.5 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, _25_DEGREES_POS_);					// Positive 25 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, _25_DEGREES_NEG_);				// Negative 25 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, _30_DEGREES_POS_);					// Positive 30 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, _30_DEGREES_POS_);				// Negative 30 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, _45_DEGREES_POS_);					// Positive 45 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, _45_DEGREES_NEG_);				// Negative 45 degree rotation (In radians.)
 
-	//D3DXMatrixRotationX(&m_rotate, 0.436332);					// Positive 25 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.84685);				// Negative 25 degree rotation (In radians.)
+	D3DXMatrixRotationX(&m_rotate, _60_DEGREES_POS_);						// Positive 60 degree rotation in the X-Axis (In radians.)
+	D3DXMatrixRotationX(&m_rotate_2,_60_DEGREES_NEG_);					// Negative 60 degree rotation in the X-Axis (In radians.)
 
-	//D3DXMatrixRotationX(&m_rotate, 0.523599);					// Positive 30 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.75959);				// Negative 30 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate, _90_DEGREES_POS_);					// Positive 90 degree rotation (In radians.)
+	//D3DXMatrixRotationX(&m_rotate_2, _90_DEGREES_NEG_);				// Negative 90 degree rotation (In radians.)
 
-	//D3DXMatrixRotationX(&m_rotate, 0.785398);					// Positive 45 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 5.49779);				// Negative 45 degree rotation (In radians.)
-
-	D3DXMatrixRotationX(&m_rotate, 1.0472);						// Positive 60 degree rotation (In radians.)
-	D3DXMatrixRotationX(&m_rotate_2, 5.23599);					// Negative 60 degree rotation (In radians.)
-
-	//D3DXMatrixRotationX(&m_rotate, 1.5708);					// Positive 90 degree rotation (In radians.)
-	//D3DXMatrixRotationX(&m_rotate_2, 4.71239);				// Negative 90 degree rotation (In radians.)
+	//D3DXMatrixRotationYawPitchRoll(&m_rotate, 1.0472f, 1.0472f, 0.0f);
 
 	D3DXMatrixScaling(&m_scaling, 0.99f, 0.99f, 0.99f);			// Scaling matrix to make sure each branch is smaller than the last.
 
@@ -441,6 +436,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 			// Reset the transform matrix to the identity to prevent unwanted composite transforms.
 			D3DXMatrixIdentity(&m_transform);
 
+
 			// Update the number of instances in the buffer.
 			filledInstances++;
 
@@ -450,6 +446,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 			int foo = 0;
 		}
 
+		// Rotation - X-Axis
 		else if (axiom.at(i) == '+')	// Rotate in the positive direction.
 		{
 			// Translate out one half width
@@ -468,7 +465,26 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_2);
 		}
 
-		else if (axiom.at(i) == '[')	// Begin a branch.
+		// Rotation - Z-axis
+		else if (axiom.at(i) == '/')
+		{
+			// Translate out one half width
+			//D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
+
+			// Apply a rotation
+		}
+
+		else if (axiom.at(i) == '\'' )
+		{
+			// Translate out one half width
+			//D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
+
+			// Apply a rotation
+			//zRot = 1.0472f;
+		}
+
+		// Branching
+		else if (axiom.at(i) == '[')
 		{
 			// Scale down slightly
 			//D3DXMatrixMultiply(&m_transform, &m_parent, &m_scaling);
@@ -477,7 +493,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 			MatrixStack.push(m_parent);
 		}
 
-		else if (axiom.at(i) == ']')	// End a branch.
+		else if (axiom.at(i) == ']')
 		{
 			if (MatrixStack.size() > 0)
 			{
