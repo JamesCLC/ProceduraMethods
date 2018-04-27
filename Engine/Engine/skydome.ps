@@ -30,10 +30,13 @@ float4 SkyDomePixelShader(PixelInputType input) : SV_TARGET
 {
     float height;
     float4 outputColor;
+	float noiseTest;
 
 
     // Determine the position on the sky dome where this pixel is located.
     height = input.domePosition.y;
+
+	//noiseTest = noise(height);
 
     // The value ranges from -1.0f to +1.0f so change it to only positive values.
     if(height < 0.0)
