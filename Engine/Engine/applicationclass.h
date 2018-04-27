@@ -94,10 +94,6 @@ private:
 
 	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
 	RenderTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_ConvolutionTexture, *m_UpSampleTexture;
-	///
-	//float screenWidth;
-	//float screenHeight;
-	///
 
 	// Sky Dome
 	SkyDomeClass* m_SkyDome;

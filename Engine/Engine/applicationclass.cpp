@@ -823,6 +823,7 @@ bool ApplicationClass::RenderGraphics()
 bool ApplicationClass::RenderSceneToTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	D3DXVECTOR3 cameraPosition;
 	bool result;
 
 	// Set the render target to be the render to texture.
@@ -839,6 +840,35 @@ bool ApplicationClass::RenderSceneToTexture()
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
+	///	SkyDome FunTime
+	// Get the position of the camera.
+	cameraPosition = m_Camera->GetPosition();
+
+	// Translate the sky dome to be centered around the camera position.
+	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+	// Turn off back face culling.
+	m_Direct3D->TurnOffCulling();
+
+	// Turn off the Z buffer.
+	m_Direct3D->TurnZBufferOff();
+
+	// Render the sky dome using the sky dome shader.
+	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
+	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
+
+	// Turn back face culling back on.
+	m_Direct3D->TurnOnCulling();
+
+	// Turn the Z buffer back on.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the world matrix.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	///
+
+	// Put the terrain object onto the pipeline for rendering.
 	m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the scene now and it will draw to the render to texture instead of the back buffer.
