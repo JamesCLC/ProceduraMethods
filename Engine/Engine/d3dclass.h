@@ -63,6 +63,11 @@ public:
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
 
+	///
+	void TurnOnCulling();
+	void TurnOffCulling();
+	///
+
 private:
 	bool m_vsync_enabled;
 
@@ -85,10 +90,9 @@ private:
 	ID3D11DepthStencilState* m_depthDisabledStencilState;
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
-
-	// Post Processing
-	//D3D11_VIEWPORT m_viewport;
-	//
+	///
+	ID3D11RasterizerState* m_rasterStateNoCulling;
+	///
 };
 
 #endif

@@ -32,6 +32,10 @@ ApplicationClass::ApplicationClass()
 	m_DownSampleTexture = 0;
 	m_ConvolutionTexture = 0;
 	m_UpSampleTexture = 0;
+
+	// Sky Dome
+	m_SkyDome = 0;
+	m_SkyDomeShader = 0;
 }
 
 
@@ -247,7 +251,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialise the cube object.
-	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/SandTexture.png");
+	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cylinder.txt", L"../Engine/data/SandTexture.png");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -391,6 +395,35 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 	///////////////////////////////////////////////
+	// Sky Dome
+
+	// Initialise the Sky Dome Object
+	m_SkyDome = new SkyDomeClass();
+	if (!m_SkyDome)
+	{
+		return false;
+	}
+
+	result = m_SkyDome->Initialize(m_Direct3D->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the down sky dome object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Initialise the Sky Dome Shader Object
+	m_SkyDomeShader = new SkyDomeShaderClass();
+	if (!m_SkyDomeShader)
+	{
+		return false;
+	}
+
+	result = m_SkyDomeShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the down sky dome object.", L"Error", MB_OK);
+		return false;
+	}
 
 	return true;
 }
@@ -564,6 +597,21 @@ void ApplicationClass::Shutdown()
 	}
 
 	///////////////////////////////////////////////////////
+	////////////////////// Sky Dome //////////////////////
+	if (m_SkyDome)
+	{
+		m_SkyDome->Shutdown();
+		delete m_SkyDome;
+		m_SkyDome = 0;
+	}
+
+
+	if (m_SkyDomeShader)
+	{
+		m_SkyDomeShader->Shutdown();
+		delete m_SkyDomeShader;
+		m_SkyDomeShader = 0;
+	}
 
 	return;
 }

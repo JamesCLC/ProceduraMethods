@@ -27,16 +27,23 @@ const float SCREEN_NEAR = 0.1f;
 #include "cpuclass.h"
 #include "fontshaderclass.h"
 #include "textclass.h"
+
 #include "terrainshaderclass.h"
 #include "lightclass.h"
 #include "modelclass.h"
 #include "textureshaderclass.h"
 
-///
+/// Post Prosessing
 #include "basicshaderclass.h"
 #include "convolutionshaderclass.h"
 #include "rendertextureclass.h"
 #include "orthowindowclass.h"
+/// 
+
+/// Skydome
+#include "skydomeclass.h"
+#include "skydomeshaderclass.h"
+///
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,12 +94,14 @@ private:
 
 	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
 	RenderTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_ConvolutionTexture, *m_UpSampleTexture;
-
-
 	///
-	float screenWidth;
-	float screenHeight;
+	//float screenWidth;
+	//float screenHeight;
 	///
+
+	// Sky Dome
+	SkyDomeClass* m_SkyDome;
+	SkyDomeShaderClass* m_SkyDomeShader;
 };
 
 #endif
