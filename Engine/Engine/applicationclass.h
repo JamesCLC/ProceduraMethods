@@ -43,6 +43,7 @@ const float SCREEN_NEAR = 0.1f;
 /// Skydome
 #include "skydomeclass.h"
 #include "skydomeshaderclass.h"
+//#include "NoiseTextureClass.h"
 ///
 
 
@@ -98,6 +99,7 @@ private:
 	// Sky Dome
 	SkyDomeClass* m_SkyDome;
 	SkyDomeShaderClass* m_SkyDomeShader;
+	//NoiseTextureClass* m_NoiseTexture;
 };
 
 #endif

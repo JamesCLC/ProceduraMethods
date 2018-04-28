@@ -23,24 +23,19 @@ bool NoiseTextureClass::Initialize(ID3D11Device* device/*, WCHAR* filename*/)
 {
 	HRESULT result;
 	
-	// Create data for the array.
-	for (int j = 0; j < _TEXTURE_HEIGHT_; j++)			 // Nested for loop. Oh boy, this is not an optimal solution.
-	{
-		for (int i = 0; i < _TEXTURE_WIDTH_; i++)
-		{
-			m_texturedata[j][i] = m_improvednoise->Sample((double)_TEXTURE_HEIGHT_, (double)_TEXTURE_WIDTH_, 0.0);
-		}
-	}
+	float *buf = (float *)malloc(_TEXTURE_WIDTH_ * _TEXTURE_HEIGHT_ * 4 * sizeof(float));
 
-	int col = 0;
+	for (int i = 0; i < _TEXTURE_WIDTH_ * _TEXTURE_HEIGHT_ * 4; i++)
+	{
+		buf[i] = 1.0f;
+	}
 
 
 	// Create the Subresource date for the texture.
 	D3D11_SUBRESOURCE_DATA m_subresourcedata;
-
-	m_subresourcedata.pSysMem = &m_texturedata;
-	m_subresourcedata.SysMemPitch = NULL;
-	m_subresourcedata.SysMemSlicePitch = NULL;			// Only used for 3D Textures. Edit - May need it if I want to use a 2D array, but I may need to swap to a 1d array
+	m_subresourcedata.pSysMem = (void *)buf;
+	m_subresourcedata.SysMemPitch = _TEXTURE_WIDTH_ * 4 * sizeof(float);
+	m_subresourcedata.SysMemSlicePitch = NULL;
 
 	int bar = 0;
 
@@ -49,23 +44,26 @@ bool NoiseTextureClass::Initialize(ID3D11Device* device/*, WCHAR* filename*/)
 
 	desc.Height = _TEXTURE_HEIGHT_;
 	desc.Width = _TEXTURE_WIDTH_;
-	desc.MipLevels = desc.ArraySize = 1;
+	desc.MipLevels = 0;
+	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
 	desc.Usage = D3D11_USAGE_DYNAMIC;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	desc.MiscFlags = 0;
-
 	
 	int foo = 0;
 
-	
 	// Create the texture using the description and the perlin data.
-	device->CreateTexture2D(&desc, &m_subresourcedata, &m_texture);
+	if (FAILED(device->CreateTexture2D(&desc, &m_subresourcedata, &m_texture)))
+	{
+		return false;
+	}
 	
+	delete[] buf;
 
-	return false;
+	return true;
 }
 
 void NoiseTextureClass::Shutdown()

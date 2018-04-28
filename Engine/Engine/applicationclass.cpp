@@ -36,6 +36,7 @@ ApplicationClass::ApplicationClass()
 	// Sky Dome
 	m_SkyDome = 0;
 	m_SkyDomeShader = 0;
+	// m_NoiseTexture = 0;
 }
 
 
@@ -407,7 +408,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	result = m_SkyDome->Initialize(m_Direct3D->GetDevice());
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the down sky dome object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the sky dome object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -421,9 +422,23 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	result = m_SkyDomeShader->Initialize(m_Direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the down sky dome object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the sky dome shader object.", L"Error", MB_OK);
 		return false;
 	}
+
+	//// Initialise the Noise Texture Object.
+	//m_NoiseTexture = new NoiseTextureClass;
+	//if (!m_NoiseTexture)
+	//{
+	//	return false;
+	//}
+
+	//result = m_NoiseTexture->Initialize(m_Direct3D->GetDevice());
+	//if (!result)
+	//{
+	//	MessageBox(hwnd, L"Could not initialize the noise texture` object.", L"Error", MB_OK);
+	//	return false;
+	//}
 
 	return true;
 }
@@ -613,6 +628,13 @@ void ApplicationClass::Shutdown()
 		m_SkyDomeShader = 0;
 	}
 
+	//if (m_NoiseTexture)
+	//{
+	//	m_NoiseTexture->Shutdown();
+	//	delete m_NoiseTexture;
+	//	m_NoiseTexture = 0;
+	//}
+
 	return;
 }
 
@@ -689,7 +711,7 @@ bool ApplicationClass::HandleInput(float frameTime)
 	keyDown = m_Input->IsXPressed();
 	m_Terrain->SmoothTerrain(m_Direct3D->GetDevice(), keyDown);
 
-	if (keyDown = m_Input->IsCPressed())												// CHANGE THIS SHIT, BOI!
+	if (keyDown = m_Input->IsCPressed())
 	m_Terrain->FlattenPeaks(m_Direct3D->GetDevice(), keyDown);
 	///
 
@@ -843,6 +865,9 @@ bool ApplicationClass::RenderSceneToTexture()
 	///	SkyDome FunTime
 	// Get the position of the camera.
 	cameraPosition = m_Camera->GetPosition();
+
+	// Translate the sky dome to be centered around the camera position.
+	//D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
 	// Translate the sky dome to be centered around the camera position.
 	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
