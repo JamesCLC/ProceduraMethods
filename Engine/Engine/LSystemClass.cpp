@@ -6,8 +6,6 @@ LSystemClass::LSystemClass()
 {
 	// Default Axiom starter value.
 	axiom = "F";
-
-	//axiom = "F[+F][-F[-F]F]F[+F][-F]";
 }
 
 LSystemClass::LSystemClass(std::string n_Axiom)
@@ -21,8 +19,13 @@ LSystemClass::~LSystemClass()
 {
 }
 
+
 void LSystemClass::Generate(int itterations)
 {
+	double sample;
+
+	m_ImprovedNoise = new improvednoise;
+
 	for (int i = 0; i < itterations; i++)
 	{
 		// Create a temporary string to store this itteration's results.
@@ -31,17 +34,24 @@ void LSystemClass::Generate(int itterations)
 		// For each character in the axiom
 		for (unsigned i = 0; i<axiom.length(); ++i)
 		{
-			// Apply a rule
+			// Sample Perlin noise for pseudo-random variation.
+			//sample = m_ImprovedNoise->Sample((double) i / 1000, (double)i /1000, (double)0);
+
+			// Apply a rule.
 			if (axiom.at(i) == 'F')
 			{
+				if (true)
+				{
+					temp.append("[FF+[<+F-F-F]-[>-F+F+F]");
+				}
+				else
+				{
+					temp.append("F");
+				}
 				// Primary Rule
 				//temp.append("F[+F]F[-F]F");
-
-				temp.append("[FF+[<+F-F-F]-[>-F+F+F]");
-
 				// Upward shennanigans?
 				//temp.append("[+FF+FFFF]");
-				
 				//////// Tested Rules ////////
 				//temp.append("F[+F][-F[-F]F]F[+F][-F]");
 				//temp.append("F[-FF][+FF][FF");
@@ -51,7 +61,6 @@ void LSystemClass::Generate(int itterations)
 				//temp.append("[+F+F+F+F+F+F+F][-F-F-F-F-F-F-F]FFFFF");
 				// Palm Tree, but with branches on branches.
 				//temp.append("[+F+F+F+F+F[-F-F-F]+F+F][-F-F-F-F-F[+F+F+F]-F-F]FFFFF");
-
 				// Example L-Systems from [http://www.inf.ed.ac.uk/teaching/courses/inf1/fp/2008/tutorials/Tutorial7.pdf]
 				// 32-segment
 				//temp.append("F+F-F-F+F+FF-F+F+FF+F-F-FF+FF-FF+F+F-FF-F-F+FF-F-F+F+F-F+");
@@ -59,16 +68,25 @@ void LSystemClass::Generate(int itterations)
 				//temp.append("F-F+F+FF-F-F+F");
 				//temp.append("-F+FF++F+F--F-F");
 				//////// Tested Rules ////////
-			}
-			// if (axiom.at(i) == 'F' && nosie sample >0.75
-		/*	{
-				temp.append('F');
-			}*/
-		}
+			} // End "F"
 
+			// Apply other rules.
+
+			if (i == (axiom.length() - 1))
+			{
+				int foo = sample;
+			}
+		}
 		// Update the axiom to be the product of this itteration
 		axiom.swap(temp);
-	}	
+	} // End Itterations
+
+	if (m_ImprovedNoise)
+	{
+		m_ImprovedNoise->Shutdown();
+		delete m_ImprovedNoise;
+		m_ImprovedNoise = 0;
+	}
 }
 
 void LSystemClass::Parse(int j)
@@ -106,6 +124,14 @@ void LSystemClass::ShutDown()
 {
 	axiom.clear();
 	temp.clear();
+
+	// Delete the improved noise object.
+	if (m_ImprovedNoise)
+	{
+		m_ImprovedNoise->Shutdown();
+		delete m_ImprovedNoise;
+		m_ImprovedNoise = 0;
+	}
 }
 
 std::string LSystemClass::GetAxiom()

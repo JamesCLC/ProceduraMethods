@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "improvednoise.h"
 
 class LSystemClass
 {
@@ -18,5 +19,7 @@ public:
 private:
 	std::string axiom;
 	std::string temp;
+
+	improvednoise* m_ImprovedNoise;
 };
 
