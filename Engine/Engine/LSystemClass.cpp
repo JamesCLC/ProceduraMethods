@@ -38,6 +38,9 @@ void LSystemClass::Generate(int itterations)
 				//temp.append("F[+F]F[-F]F");
 
 				temp.append("[FF+[<+F-F-F]-[>-F+F+F]");
+
+				// Upward shennanigans?
+				//temp.append("[+FF+FFFF]");
 				
 				//////// Tested Rules ////////
 				//temp.append("F[+F][-F[-F]F]F[+F][-F]");
@@ -57,6 +60,10 @@ void LSystemClass::Generate(int itterations)
 				//temp.append("-F+FF++F+F--F-F");
 				//////// Tested Rules ////////
 			}
+			// if (axiom.at(i) == 'F' && nosie sample >0.75
+		/*	{
+				temp.append('F');
+			}*/
 		}
 
 		// Update the axiom to be the product of this itteration
