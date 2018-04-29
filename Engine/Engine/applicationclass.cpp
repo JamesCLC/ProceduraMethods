@@ -698,18 +698,32 @@ bool ApplicationClass::HandleInput(float frameTime)
 	// Set the frame time for calculating the updated position.
 	m_Position->SetFrameTime(frameTime);
 
-	// Handle the input.
+	// Apply Terrain Deformation.
 	keyDown = m_Input->IsSpacePressed();
 	m_Terrain->GenerateHeightMap(m_Direct3D->GetDevice(), keyDown);	
 
-	///
+	// Apply basic smoothing.
 	keyDown = m_Input->IsXPressed();
 	m_Terrain->SmoothTerrain(m_Direct3D->GetDevice(), keyDown);
 
-	if (keyDown = m_Input->IsCPressed())
+	// Apply height-specific smoothing.
+	keyDown = m_Input->IsCPressed();
 	m_Terrain->FlattenPeaks(m_Direct3D->GetDevice(), keyDown);
-	///
 
+	// Toggle Post Processing
+	if (keyDown = m_Input->IsPPressed())
+	{
+		if (is_postProcessed == true)
+		{
+			is_postProcessed = false;
+		} 
+		else if (is_postProcessed == false)
+		{
+			is_postProcessed = true;
+		}
+	}
+
+	///////// Camera Controls /////////
 	keyDown = m_Input->IsLeftPressed();
 	m_Position->TurnLeft(keyDown);
 
@@ -764,40 +778,53 @@ bool ApplicationClass::RenderGraphics()
 {
 	bool result;
 
-	// Render the complete scene to a texture.
-	result = RenderSceneToTexture();
-	if (!result)
+
+	if (is_postProcessed)
 	{
-		return false;
+		// Render the complete scene to a texture.
+		result = RenderSceneToTexture();
+		if (!result)
+		{
+			return false;
+		}
+
+		// Downscale the render texture for performance reasons.
+		result = DownScaleTexture();
+		if (!result)
+		{
+			return false;
+		}
+
+		// Apply the Convolution shader to the downscaled render texture.
+		result = RenderConvolutionToTexture();
+		if (!result)
+		{
+			return false;
+		}
+
+		// Upscale the render texture back to the correct size.
+		result = UpScaleTexture();
+		if (!result)
+		{
+			return false;
+		}
+
+		// Render the processed scene to the window.
+		result = Render2DTextureScene();
+		if (!result)
+		{
+			return false;
+		}
+	}
+	else
+	{
+		result = RenderScene();
+		if (!result)
+		{
+			return false;
+		}
 	}
 
-	// Downscale the render texture for performance reasons.
-	result = DownScaleTexture();
-	if (!result)
-	{
-		return false;
-	}
-
-	// Apply the Convolution shader to the downscaled render texture.
-	result = RenderConvolutionToTexture();
-	if (!result)
-	{
-		return false;
-	}
-
-	// Upscale the render texture back to the correct size.
-	result = UpScaleTexture();
-	if (!result)
-	{
-		return false;
-	}
-
-	// Render the processed scene to the window.
-	result = Render2DTextureScene();
-	if (!result)
-	{
-		return false;
-	}
 
 	////////////////////// Render UI ////////////////////
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
@@ -857,60 +884,59 @@ bool ApplicationClass::RenderSceneToTexture()
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 
-	///	SkyDome FunTime
-	// Get the position of the camera.
-	cameraPosition = m_Camera->GetPosition();
+	//////////////////// SkyDome ////////////////////
+		// Get the position of the camera.
+		cameraPosition = m_Camera->GetPosition();
 
-	// Translate the sky dome to be centered around the camera position.
-	//D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-	// Translate the sky dome to be centered around the camera position.
-	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+		// Translate the sky dome to be centered around the camera position.
+		D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-	// Turn off back face culling.
-	m_Direct3D->TurnOffCulling();
+		// Turn off back face culling.
+		m_Direct3D->TurnOffCulling();
 
-	// Turn off the Z buffer.
-	m_Direct3D->TurnZBufferOff();
+		// Turn off the Z buffer.
+		m_Direct3D->TurnZBufferOff();
 
-	// Render the sky dome using the sky dome shader.
-	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
-	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
+		// Render the sky dome using the sky dome shader.
+		m_SkyDome->Render(m_Direct3D->GetDeviceContext());
+		m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+			m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
 
-	// Turn back face culling back on.
-	m_Direct3D->TurnOnCulling();
+		// Turn back face culling back on.
+		m_Direct3D->TurnOnCulling();
 
-	// Turn the Z buffer back on.
-	m_Direct3D->TurnZBufferOn();
+		// Turn the Z buffer back on.
+		m_Direct3D->TurnZBufferOn();
 
-	// Reset the world matrix.
-	m_Direct3D->GetWorldMatrix(worldMatrix);
-	///
-
-	// Put the terrain object onto the pipeline for rendering.
-	m_Terrain->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the scene now and it will draw to the render to texture instead of the back buffer.
-	//Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-			m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-			m_Terrain->GetSlopeTexture());
-	if (!result)
-	{
-		return false;
-	}
+		// Reset the world matrix.
+		m_Direct3D->GetWorldMatrix(worldMatrix);
 	
-	// Render the model buffers.
-	m_Cube->Render(m_Direct3D->GetDeviceContext());
+	//////////////////// Terrain ////////////////////
+		// Put the terrain object onto the pipeline for rendering.
+		m_Terrain->Render(m_Direct3D->GetDeviceContext());
+
+		// Render the scene now and it will draw to the render to texture instead of the back buffer.
+		//Render the terrain using the terrain shader.
+		result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+				m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+				m_Terrain->GetSlopeTexture());
+		if (!result)
+		{
+			return false;
+		}
+
+	//////////////////// Cactus ////////////////////
+		// Render the model buffers.
+		m_Cube->Render(m_Direct3D->GetDeviceContext());
 	
-	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix,
-		viewMatrix, projectionMatrix, m_Cube->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
+		// Render the cube using the texture shader.
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix,
+			viewMatrix, projectionMatrix, m_Cube->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
 	
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_Direct3D->SetBackBufferRenderTarget();
@@ -937,9 +963,9 @@ bool ApplicationClass::DownScaleTexture()
 	m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
-	//m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
+	// Create a usable veiw matrix.
 	D3DXMatrixIdentity(&viewMatrix);
 	viewMatrix._43 = 0.1f;
 
@@ -1004,6 +1030,9 @@ bool ApplicationClass::RenderConvolutionToTexture()
 
 	// Create the convolution kernel matrix.
 	D3DXMatrixIdentity(&convolutionKernel);
+	convolutionKernel._22 = 0;
+	convolutionKernel._13 = -1;
+	convolutionKernel._31 = -1;
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
@@ -1014,9 +1043,6 @@ bool ApplicationClass::RenderConvolutionToTexture()
 	// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
 	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 		m_DownSampleTexture->GetShaderResourceView(), convolutionKernel, screenSizeX);
-
-	/*result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(),
-		worldMatrix, viewMatrix, projectionMatrix, m_DownSampleTexture->GetShaderResourceView());*/
 	if (!result)
 	{
 		return false;
@@ -1049,9 +1075,9 @@ bool ApplicationClass::UpScaleTexture()
 	m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
-	//m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
+	// Create a sensible veiw matrix.
 	D3DXMatrixIdentity(&viewMatrix);
 	viewMatrix._43 = 0.1f;
 
@@ -1121,45 +1147,78 @@ bool ApplicationClass::Render2DTextureScene()
 	return true;
 }
 
-// Scrapped function that just rendered the scene normally.
-//bool ApplicationClass::RenderScene()
-//{
-//
-//	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
-//	bool result;
-//
-//	// Generate the view matrix based on the camera's position.
-//	m_Camera->Render();
-//
-//	// Get the world, view, and projection matrices from the camera and d3d objects.
-//	m_Direct3D->GetWorldMatrix(worldMatrix);
-//	m_Camera->GetViewMatrix(viewMatrix);
-//	m_Direct3D->GetProjectionMatrix(projectionMatrix);
-//
-//	// Render the terrain buffers.
-//	m_Terrain->Render(m_Direct3D->GetDeviceContext());
-//
-//	// Render the terrain using the terrain shader.
-//	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-//		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-//		m_Terrain->GetSlopeTexture());
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	// Render the model buffers.
-//	m_Cube->Render(m_Direct3D->GetDeviceContext());
-//
-//	// Render the cube using the texture shader.
-//	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	return true;
-//}
-//
+ // Function that just rendered the scene normally.
+bool ApplicationClass::RenderScene()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	D3DXVECTOR3 cameraPosition;
+	bool result;
+
+	// Clear the scene.
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world, view, and projection matrices from the camera and d3d objects.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+
+	//////////////////// SkyDome ////////////////////
+	// Get the position of the camera.
+	cameraPosition = m_Camera->GetPosition();
+
+
+	// Translate the sky dome to be centered around the camera position.
+	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+	// Turn off back face culling.
+	m_Direct3D->TurnOffCulling();
+
+	// Turn off the Z buffer.
+	m_Direct3D->TurnZBufferOff();
+
+	// Render the sky dome using the sky dome shader.
+	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
+	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
+
+	// Turn back face culling back on.
+	m_Direct3D->TurnOnCulling();
+
+	// Turn the Z buffer back on.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the world matrix.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	////////////////// Terrain //////////////////
+	// Render the terrain buffers.
+	m_Terrain->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the terrain using the terrain shader.
+	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+		m_Terrain->GetSlopeTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	////////////////// Cactus //////////////////
+	// Render the model buffers.
+	m_Cube->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the cube using the texture shader.
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 

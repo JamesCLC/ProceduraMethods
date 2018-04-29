@@ -360,7 +360,7 @@ bool ConvolutionShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCont
 	D3DXMatrixTranspose(&worldMatrix, &worldMatrix);
 	D3DXMatrixTranspose(&viewMatrix, &viewMatrix);
 	D3DXMatrixTranspose(&projectionMatrix, &projectionMatrix);
-	//D3DXMatrixTranspose(&convolutionKernel, &convolutionKernel);
+	D3DXMatrixTranspose(&convolutionKernel, &convolutionKernel);
 
 	////////// Matrix Buffer //////////
 		// Lock the constant buffer so it can be written to.

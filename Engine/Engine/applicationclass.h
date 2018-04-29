@@ -70,7 +70,7 @@ private:
 	bool DownScaleTexture();
 	bool RenderConvolutionToTexture();
 	bool UpScaleTexture();
-	//bool RenderScene();
+	bool RenderScene();
 	bool Render2DTextureScene();
 
 private:
@@ -95,6 +95,9 @@ private:
 
 	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
 	RenderTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_ConvolutionTexture, *m_UpSampleTexture;
+
+	// A flag used in input processing to allow post processing to be "turned on and off."
+	bool is_postProcessed = false;
 
 	// Sky Dome
 	SkyDomeClass* m_SkyDome;

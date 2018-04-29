@@ -54,6 +54,7 @@ public:
 	///
 	bool IsXPressed();
 	bool IsCPressed();
+	bool IsPPressed();
 	///
 
 private:
