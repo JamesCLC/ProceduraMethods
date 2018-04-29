@@ -11,7 +11,6 @@ cbuffer MatrixBuffer
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-
 };
 
 cbuffer ScreenSizeBuffer
@@ -68,16 +67,16 @@ PixelInputType ConvolutionVertexShader(VertexInputType input)
 	// Determine the floating point size of a texel for a screen with this specific height.
 	texelSize = 1.0f / screenHeight;
 
-	// Create UV coordinates for the pixel and its four vertical neighbors on either side.
-	output.texCoord1 = input.tex + float2(0.0f, texelSize * -4.0f);
-	output.texCoord2 = input.tex + float2(0.0f, texelSize * -3.0f);
-	output.texCoord3 = input.tex + float2(0.0f, texelSize * -2.0f);
-	output.texCoord4 = input.tex + float2(0.0f, texelSize * -1.0f);
-	output.texCoord5 = input.tex + float2(0.0f, texelSize *  0.0f);
-	output.texCoord6 = input.tex + float2(0.0f, texelSize *  1.0f);
-	output.texCoord7 = input.tex + float2(0.0f, texelSize *  2.0f);
-	output.texCoord8 = input.tex + float2(0.0f, texelSize *  3.0f);
-	output.texCoord9 = input.tex + float2(0.0f, texelSize *  4.0f);
+	// Create UV coordinates for the pixel and its 9 surrounding neighbours.
+	output.texCoord1 = input.tex + float2(texelSize* -1.0f, texelSize * -1.0f);
+	output.texCoord2 = input.tex + float2(texelSize* -1.0f, texelSize		 );
+	output.texCoord3 = input.tex + float2(texelSize* -1.0f, texelSize *  1.0f);
+	output.texCoord4 = input.tex + float2(texelSize,	    texelSize * -1.0f);
+	output.texCoord5 = input.tex + float2(texelSize,        texelSize        );	// Centre
+	output.texCoord6 = input.tex + float2(texelSize,        texelSize *  1.0f);
+	output.texCoord7 = input.tex + float2(texelSize * 1.0f, texelSize * -1.0f);
+	output.texCoord8 = input.tex + float2(texelSize * 1.0f, texelSize        );
+	output.texCoord9 = input.tex + float2(texelSize * 1.0f, texelSize * 1.0f );
 
 	return output;
 }

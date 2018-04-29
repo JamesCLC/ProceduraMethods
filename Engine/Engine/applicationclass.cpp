@@ -58,14 +58,10 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	char videoCard[128];
 	int videoMemory;
 
-	///
-	int downSampleWidth, downSampleHeight;
-
 	// Set the size to sample down to.
-	downSampleWidth = screenWidth / 2;
-	downSampleHeight = screenHeight / 2;
-	///
-	
+	int downSampleWidth = screenWidth / 2;
+	int downSampleHeight = screenHeight / 2;
+
 	// Create the input object. The input object will be used to handle reading the keyboard and mouse input from the user.
 	m_Input = new InputClass;
 	if(!m_Input)
@@ -123,7 +119,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialize the terrain object.
-//	result = m_Terrain->Initialize(m_Direct3D->GetDevice(), "../Engine/data/heightmap01.bmp");
 	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 128,128, L"../Engine/data/SandTexture.png", L"../Engine/data/SlopeTexture.png");   //initialise the flat terrain.
 	if(!result)
 	{
@@ -330,7 +325,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialise the render texture object.
-	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
+	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
@@ -345,7 +340,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialise the Down Sample Texture
-	result = m_DownSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
+	result = m_DownSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
@@ -979,7 +974,7 @@ bool ApplicationClass::DownScaleTexture()
 
 bool ApplicationClass::RenderConvolutionToTexture()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, convolutionKernel;
 	float screenSizeX;
 	bool result;
 
@@ -997,15 +992,18 @@ bool ApplicationClass::RenderConvolutionToTexture()
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
-	// Get the world and view matrices from the camera and d3d objects.
-	//m_Camera->GetViewMatrix(viewMatrix);
+	// Get the world matrix.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
+	// Create a veiw matrix.
 	D3DXMatrixIdentity(&viewMatrix);
 	viewMatrix._43 = 0.1f;
 
 	// Get the ortho matrix from the render to texture since texture has different dimensions.
 	m_Direct3D->GetOrthoMatrix(projectionMatrix);
+
+	// Create the convolution kernel matrix.
+	D3DXMatrixIdentity(&convolutionKernel);
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
@@ -1015,7 +1013,7 @@ bool ApplicationClass::RenderConvolutionToTexture()
 
 	// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
 	result = m_ConvolutionShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
+		m_DownSampleTexture->GetShaderResourceView(), convolutionKernel, screenSizeX);
 
 	/*result = m_BasicShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(),
 		worldMatrix, viewMatrix, projectionMatrix, m_DownSampleTexture->GetShaderResourceView());*/

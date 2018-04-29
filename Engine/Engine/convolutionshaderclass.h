@@ -26,13 +26,17 @@ private:
 		D3DXMATRIX world;
 		D3DXMATRIX view;
 		D3DXMATRIX projection;
-		//float screenHeight;
 	};
 
 	struct ScreenSizeBufferType
 	{
 		float screenHeight;
 		D3DXVECTOR3 padding;
+	};
+
+	struct ConvolutionKernelBufferType
+	{
+		D3DXMATRIX convolutionKernel;
 	};
 
 public:
@@ -42,7 +46,8 @@ public:
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, ID3D11ShaderResourceView*, float);
+	bool Render(ID3D11DeviceContext*, int, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX,
+		ID3D11ShaderResourceView*, D3DXMATRIX, float);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);
@@ -50,7 +55,7 @@ private:
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
 
 	bool SetShaderParameters(ID3D11DeviceContext*, D3DXMATRIX, D3DXMATRIX, D3DXMATRIX, 
-		ID3D11ShaderResourceView*, float);
+		ID3D11ShaderResourceView*, D3DXMATRIX, float);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
@@ -59,11 +64,8 @@ private:
 	ID3D11InputLayout* m_layout;
 	ID3D11SamplerState* m_sampleState;
 	ID3D11Buffer* m_matrixBuffer;
-
 	ID3D11Buffer* m_screenSizeBuffer;
-
-	float m_screenHeight;
-
+	ID3D11Buffer* m_convolutionKernelBuffer;
 };
 
 #endif

@@ -19,10 +19,12 @@ improvednoise::improvednoise(const improvednoise &other)
 
 improvednoise::~improvednoise()
 {
+
 }
 
 void improvednoise::Initialise()
 {
+
 }
 
 void improvednoise::Shutdown()

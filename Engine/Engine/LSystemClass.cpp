@@ -22,7 +22,7 @@ LSystemClass::~LSystemClass()
 
 void LSystemClass::Generate(int itterations)
 {
-	double sample;
+	double sample = 0.0;
 
 	m_ImprovedNoise = new improvednoise;
 
@@ -34,19 +34,23 @@ void LSystemClass::Generate(int itterations)
 		// For each character in the axiom
 		for (unsigned i = 0; i<axiom.length(); ++i)
 		{
+			// Normalise the Noise input.
+
 			// Sample Perlin noise for pseudo-random variation.
-			//sample = m_ImprovedNoise->Sample((double) i / 1000, (double)i /1000, (double)0);
+			//sample = m_ImprovedNoise->Sample((double) i / axiom.length(), (double)i / axiom.length(), (double)0);
+			//sample = m_ImprovedNoise->Sample((double)i *0.1, (double)i *0.1, (double)0);
+
 
 			// Apply a rule.
 			if (axiom.at(i) == 'F')
 			{
-				if (true)
+				if (sample > 1.0)
 				{
-					temp.append("[FF+[<+F-F-F]-[>-F+F+F]");
+					temp.append("F");
 				}
 				else
 				{
-					temp.append("F");
+					temp.append("[FF+[<F-F-F]-[>F+F+F]");
 				}
 				// Primary Rule
 				//temp.append("F[+F]F[-F]F");
@@ -74,7 +78,7 @@ void LSystemClass::Generate(int itterations)
 
 			if (i == (axiom.length() - 1))
 			{
-				int foo = sample;
+				//int foo = sample;
 			}
 		}
 		// Update the axiom to be the product of this itteration
