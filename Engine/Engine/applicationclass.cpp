@@ -247,7 +247,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialise the cube object.
-	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cylinder.txt", L"../Engine/data/SandTexture.png");
+	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cylinder2.txt", L"../Engine/data/SandTexture.png");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -606,7 +606,7 @@ void ApplicationClass::Shutdown()
 		m_UpSampleTexture = 0;
 	}
 
-	///////////////////////////////////////////////////////
+
 	////////////////////// Sky Dome //////////////////////
 	if (m_SkyDome)
 	{
@@ -637,7 +637,6 @@ void ApplicationClass::Shutdown()
 bool ApplicationClass::Frame()
 {
 	bool result;
-
 
 	// Read the user input.
 	result = m_Input->Frame();
@@ -693,6 +692,7 @@ bool ApplicationClass::HandleInput(float frameTime)
 {
 	bool keyDown, result;
 	float posX, posY, posZ, rotX, rotY, rotZ;
+	bool myflag = true;
 
 
 	// Set the frame time for calculating the updated position.
@@ -713,14 +713,23 @@ bool ApplicationClass::HandleInput(float frameTime)
 	// Toggle Post Processing
 	if (keyDown = m_Input->IsPPressed())
 	{
-		if (is_postProcessed == true)
+		if (myflag) // This didn't work :(
 		{
-			is_postProcessed = false;
-		} 
-		else if (is_postProcessed == false)
-		{
-			is_postProcessed = true;
+			if (is_postProcessed == true)
+			{
+				is_postProcessed = false;
+			}
+			else if (is_postProcessed == false)
+			{
+				is_postProcessed = true;
+			}
+
+			myflag = false;
 		}
+		else {
+			myflag = true;
+		}
+	
 	}
 
 	///////// Camera Controls /////////
@@ -864,6 +873,80 @@ bool ApplicationClass::RenderGraphics()
 }
 
 
+// Function that just rendered the scene normally.
+bool ApplicationClass::RenderScene()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
+	D3DXVECTOR3 cameraPosition;
+	bool result;
+
+	// Clear the scene.
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world, view, and projection matrices from the camera and d3d objects.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+
+	//////////////////// SkyDome ////////////////////
+	// Get the position of the camera.
+	cameraPosition = m_Camera->GetPosition();
+
+
+	// Translate the sky dome to be centered around the camera position.
+	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+	// Turn off back face culling.
+	m_Direct3D->TurnOffCulling();
+
+	// Turn off the Z buffer.
+	m_Direct3D->TurnZBufferOff();
+
+	// Render the sky dome using the sky dome shader.
+	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
+	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
+
+	// Turn back face culling back on.
+	m_Direct3D->TurnOnCulling();
+
+	// Turn the Z buffer back on.
+	m_Direct3D->TurnZBufferOn();
+
+	// Reset the world matrix.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	////////////////// Terrain //////////////////
+	// Render the terrain buffers.
+	m_Terrain->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the terrain using the terrain shader.
+	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
+		m_Terrain->GetSlopeTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	////////////////// Cactus //////////////////
+	// Render the model buffers.
+	m_Cube->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the cube using the texture shader.
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+// Render the Scene to a texture. That texture is then used for post processing.
 bool ApplicationClass::RenderSceneToTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
@@ -947,6 +1030,7 @@ bool ApplicationClass::RenderSceneToTexture()
 	return true;
 }
 
+// Reduce the sice of the image for post processing for efficiency reasons.
 bool ApplicationClass::DownScaleTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
@@ -998,6 +1082,7 @@ bool ApplicationClass::DownScaleTexture()
 	return true;
 }
 
+// Process the image of the scene using the convolution kernel.
 bool ApplicationClass::RenderConvolutionToTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, convolutionKernel;
@@ -1060,6 +1145,7 @@ bool ApplicationClass::RenderConvolutionToTexture()
 	return true;
 }
 
+// Set the render texture to the proper size.
 bool ApplicationClass::UpScaleTexture()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
@@ -1110,6 +1196,7 @@ bool ApplicationClass::UpScaleTexture()
 	return true;
 }
 
+// Render the post-processed image of the scene.
 bool ApplicationClass::Render2DTextureScene()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
@@ -1147,78 +1234,7 @@ bool ApplicationClass::Render2DTextureScene()
 	return true;
 }
 
- // Function that just rendered the scene normally.
-bool ApplicationClass::RenderScene()
-{
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
-	D3DXVECTOR3 cameraPosition;
-	bool result;
 
-	// Clear the scene.
-	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
-
-	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
-
-	// Get the world, view, and projection matrices from the camera and d3d objects.
-	m_Direct3D->GetWorldMatrix(worldMatrix);
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_Direct3D->GetProjectionMatrix(projectionMatrix);
-
-	//////////////////// SkyDome ////////////////////
-	// Get the position of the camera.
-	cameraPosition = m_Camera->GetPosition();
-
-
-	// Translate the sky dome to be centered around the camera position.
-	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-
-	// Turn off back face culling.
-	m_Direct3D->TurnOffCulling();
-
-	// Turn off the Z buffer.
-	m_Direct3D->TurnZBufferOff();
-
-	// Render the sky dome using the sky dome shader.
-	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
-	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
-
-	// Turn back face culling back on.
-	m_Direct3D->TurnOnCulling();
-
-	// Turn the Z buffer back on.
-	m_Direct3D->TurnZBufferOn();
-
-	// Reset the world matrix.
-	m_Direct3D->GetWorldMatrix(worldMatrix);
-
-	////////////////// Terrain //////////////////
-	// Render the terrain buffers.
-	m_Terrain->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-		m_Terrain->GetSlopeTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	////////////////// Cactus //////////////////
-	// Render the model buffers.
-	m_Cube->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	return true;
-}
 
 
 
