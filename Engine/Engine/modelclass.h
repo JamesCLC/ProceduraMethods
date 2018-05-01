@@ -31,7 +31,7 @@ using namespace std;
 #define _25_DEGREES_POS_ 0.436332f
 #define _25_DEGREES_NEG_ 5.84685f
 #define _30_DEGREES_POS_ 0.523599f
-#define _30_DEGREES_POS_ 5.75959f
+#define _30_DEGREES_NEG_ 5.75959f
 #define _45_DEGREES_POS_ 0.785398f
 #define _45_DEGREES_NEG_ 5.49779f
 #define _60_DEGREES_POS_ 1.0472f

@@ -37,25 +37,27 @@ void LSystemClass::Generate(int itterations)
 			//sample = m_ImprovedNoise->Sample((double)itterations * 2, (double)itterations * 2, (double)0);
 
 			// generate a pseudo-random number between 1 and 3.
-			sample = rand() % 3 + 1;
+			sample = rand() % 10 + 1;
 
 			// Apply a rule based on the sampled noise.
 			if (axiom.at(i) == 'F')
 			{
-				temp.append("FF[+[<F-F-F]-[>F+F+F]");
+				if (sample >= 4)
+				{
+					temp.append("FF[-F+F]");
+				}
+				else if (sample >= 3)
+				{
+					temp.append("FF[+F-F]");
+				}
+				else
+				{
+					temp.append("F");
+				}
 
-				//if (sample >= 3)
-				//{
-				//	temp.append("F[+F]F[-F]F");
-				//}
-				//else if (sample >= 2)
-				//{
-				//	// Rule
-				//}
-				//else
-				//{
-				//	temp.append("FF[FF+[<F-F-F]-[>F+F+F]");
-				//}
+				//temp.append("FF[+[<F-F-F]-[>F+F+F]");
+				//temp.append("F[+F-FFF][-F+FFF]FF");
+
 
 				// Primary Rule
 				//temp.append("F[+F]F[-F]F");
@@ -97,36 +99,6 @@ void LSystemClass::Generate(int itterations)
 	}
 }
 
-void LSystemClass::Parse(int j)
-{
-	// Moved to modelclass.cpp!
-
-	for (unsigned i = 0; i<axiom.length(); ++i)
-	{
-		if (axiom.at(i) == 'F')
-		{
-			// Move the Matrix forward.
-		}
-		else if (axiom.at(i) == '+')
-		{
-			// Rotate the Matrix in the positive direction.
-		}
-		else if (axiom.at(i) == '-')
-		{
-			// Rotate the Matrix in the negative direction.
-		}
-		else if (axiom.at(i) == '[')
-		{
-			// Begin a branch.
-			// Push the current matrix onto the stack.
-		}
-		else if (axiom.at(i) == ']')
-		{
-			// End a branch.
-			// Pop the current matrix off the stack.
-		}
-	}
-}
 
 void LSystemClass::ShutDown()
 {

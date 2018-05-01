@@ -11,7 +11,6 @@ public:
 	~LSystemClass();
 
 	void Generate(int);
-	void Parse(int);
 	void ShutDown();
 
 	std::string GetAxiom();

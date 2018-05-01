@@ -59,11 +59,11 @@ float4 TerrainPixelShader(PixelInputType input) : SV_TARGET
 	// Calculate the slope of this point.
     slope = 1.0f - input.normal.y; 
 
-	if (slope >= 0.4)
+	if (slope >= 0.7)
 	{
 		textureColor = slopeColor;
 	}
-	else if ((slope < 0.4) && (slope >0.2))
+	else if ((slope < 0.7) && (slope >0.2))
 	{
 		blend = (slope-0.2f) * (1.0f/(0.7 -0.2f));
 		textureColor = lerp(sandColor, slopeColor, blend);
