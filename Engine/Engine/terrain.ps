@@ -68,6 +68,8 @@ float4 TerrainPixelShader(PixelInputType input) : SV_TARGET
 		blend = (slope-0.2f) * (1.0f/(0.7 -0.2f));
 		textureColor = lerp(sandColor, slopeColor, blend);
 
+		// Sample both textures, but use one as an alpha value.
+
 	}
 	else
 	{

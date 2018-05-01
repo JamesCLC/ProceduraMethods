@@ -166,7 +166,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// Set the number of instanes in the array.
 	// Must be no greater than the legnth of the generated aixom.
-	m_instanceCount = 100;
+	m_instanceCount = 98;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -466,7 +466,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
 
 			// Appy Rotation
-			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_z_pos);
+			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_z_pos);	
 		}
 
 		else if (axiom.at(i) == '<' )
@@ -475,7 +475,7 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 			D3DXMatrixMultiply(&m_transform, &m_transform, &m_translate_2);
 
 			// Appy Rotation
-			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_z_neg);
+			D3DXMatrixMultiply(&m_transform, &m_transform, &m_rotate_z_neg);	
 		}
 
 		// Branching

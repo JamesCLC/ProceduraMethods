@@ -22,9 +22,8 @@ LSystemClass::~LSystemClass()
 
 void LSystemClass::Generate(int itterations)
 {
-	double sample = 0.0;
-
 	m_ImprovedNoise = new improvednoise;
+	double sample = 0.0;
 
 	for (int i = 0; i < itterations; i++)
 	{
@@ -34,24 +33,30 @@ void LSystemClass::Generate(int itterations)
 		// For each character in the axiom
 		for (unsigned i = 0; i<axiom.length(); ++i)
 		{
-			// Normalise the Noise input.
-
 			// Sample Perlin noise for pseudo-random variation.
-			//sample = m_ImprovedNoise->Sample((double) i / axiom.length(), (double)i / axiom.length(), (double)0);
-			//sample = m_ImprovedNoise->Sample((double)i *0.1, (double)i *0.1, (double)0);
+			//sample = m_ImprovedNoise->Sample((double)itterations * 2, (double)itterations * 2, (double)0);
 
+			// generate a pseudo-random number between 1 and 3.
+			sample = rand() % 3 + 1;
 
-			// Apply a rule.
+			// Apply a rule based on the sampled noise.
 			if (axiom.at(i) == 'F')
 			{
-				if (sample > 1.0)
-				{
-					temp.append("F");
-				}
-				else
-				{
-					temp.append("[FF+[<F-F-F]-[>F+F+F]");
-				}
+				temp.append("FF[+[<F-F-F]-[>F+F+F]");
+
+				//if (sample >= 3)
+				//{
+				//	temp.append("F[+F]F[-F]F");
+				//}
+				//else if (sample >= 2)
+				//{
+				//	// Rule
+				//}
+				//else
+				//{
+				//	temp.append("FF[FF+[<F-F-F]-[>F+F+F]");
+				//}
+
 				// Primary Rule
 				//temp.append("F[+F]F[-F]F");
 				// Upward shennanigans?
@@ -74,11 +79,10 @@ void LSystemClass::Generate(int itterations)
 				//////// Tested Rules ////////
 			} // End "F"
 
-			// Apply other rules.
-
+			// Debug
 			if (i == (axiom.length() - 1))
 			{
-				//int foo = sample;
+				int foo = sample;
 			}
 		}
 		// Update the axiom to be the product of this itteration

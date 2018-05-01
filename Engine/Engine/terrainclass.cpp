@@ -552,7 +552,8 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 	// We want to smooth out terrain so it looks less awful.
 	// This is done by taking each vertex, sampling the 8 surrounding vertecies,
 	// adding them together and then dividing by 8 (taking the average)
-	// Note: Need to make sure I don't sample off the edge of my terrain array, or it'ss go funky.
+	// Note: Need to make sure I don't sample off the edge of my terrain array, or it'll go funky.
+
 	bool result;
 
 	if (keydown && (!m_terrainSmoothedToggle))
@@ -577,6 +578,7 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 				}
 
 				index = (m_terrainHeight * j) + i - 1;
+
 				if (index < m_terrainHeight*m_terrainWidth && index > 0)
 				{
 					average += m_heightMap[index].y;
@@ -657,81 +659,79 @@ bool TerrainClass::SmoothTerrain(ID3D11Device* device, bool keydown)
 // A modified Smoothing function that targets the heightest points on the map.
 bool TerrainClass::FlattenPeaks(ID3D11Device* device, bool keydown)
 {
-	// We want to smooth out terrain so it looks less awful.
-	// This is done by taking each vertex, sampling the 8 surrounding vertecies, and taking the average.
-
 	bool result;
 
-	if (keydown && (!m_terrainSmoothedToggle))
+	//
+	if (keydown && (!m_terrainSmoothedToggle))	// Should this be here?
 	{
-
-		int index;
+		int index = 0;
 		float height = 0.0;
 
-
+		// Itterate through the "height" of the terrain.
 		for (int j = 0; j<m_terrainHeight; j++)
 		{
+			// Irretate through the width of the terrain.
 			for (int i = 0; i<m_terrainWidth; i++)
 			{
 				// Add up all the surrounding vertecies.
 				index = (m_terrainHeight * (j - 1)) + i - 1;
 
-				if (m_heightMap)
+				if (m_heightMap && index > 0)
 				{
 					if (m_heightMap[index].y > 1)
 					{
 						float average = 0.0f;
 
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * j) + i - 1;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * (j + 1)) + i - 1;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * (j - 1)) + i;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * (j + 1)) + i;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * (j - 1)) + i + 1;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * j) + i + 1;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						index = (m_terrainHeight * (j + 1)) + i + 1;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}
 
 						// Add on the centre vertex.
 						index = (m_terrainHeight * j) + i;
-						if (index < m_terrainHeight*m_terrainWidth && index > 0)
+						if (index < m_terrainHeight*m_terrainWidth /*&& index > 0*/)
 						{
 							average += m_heightMap[index].y;
 						}

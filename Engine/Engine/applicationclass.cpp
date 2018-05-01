@@ -119,7 +119,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialize the terrain object.
-	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 128,128, L"../Engine/data/SandTexture.png", L"../Engine/data/SlopeTexture.png");   //initialise the flat terrain.
+	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 128,128, L"../Engine/data/sand.jpg", L"../Engine/data/sandstone.jpg");   //initialise the flat terrain.
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the terrain object.", L"Error", MB_OK);
@@ -713,7 +713,7 @@ bool ApplicationClass::HandleInput(float frameTime)
 	// Toggle Post Processing
 	if (keyDown = m_Input->IsPPressed())
 	{
-		if (myflag) // This didn't work :(
+		if (myflag) // Non-functioning.
 		{
 			if (is_postProcessed == true)
 			{
