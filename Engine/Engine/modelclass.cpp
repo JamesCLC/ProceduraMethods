@@ -166,7 +166,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// Set the number of instanes in the array.
 	// Must be no greater than the legnth of the generated aixom.
-	m_instanceCount = 10;
+	m_instanceCount = 32;
 
 	// Create the instance array.
 	instances = new InstanceType[m_instanceCount];
@@ -369,7 +369,8 @@ void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 	int filledInstances = 0;
 
 	//Initialise the Matricies we'll be using to manipulate our cactus.
-	D3DXMATRIX m_translate_1, m_translate_2, m_rotate_x_pos, m_rotate_x_neg, m_rotate_z_pos, m_rotate_z_neg, m_transform, m_parent, m_scaling;
+	D3DXMATRIX m_translate_1, m_translate_2, m_rotate_x_pos, m_rotate_x_neg, m_rotate_z_pos, m_rotate_z_neg,
+		m_transform, m_parent, m_scaling;
 
 	// Initialise matricies to the Indentiy Matrix.
 	D3DXMatrixIdentity(&m_translate_1);

@@ -36,6 +36,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "modelclass.h"
 #include "textureshaderclass.h"
 #include "vector"
+#define _NUMBER_OF_CACTI 16
 
 /// Post Prosessing
 #include "basicshaderclass.h"
@@ -96,7 +97,7 @@ private:
 	// Cactus
 	ModelClass* m_Cactus;
 	TextureShaderClass* m_TextureShader;
-	std::vector<ModelClass*> m_Cacti;
+	ModelClass *m_Cacti[_NUMBER_OF_CACTI];
 
 	// Post Processing
 	BasicShaderClass* m_BasicShader;

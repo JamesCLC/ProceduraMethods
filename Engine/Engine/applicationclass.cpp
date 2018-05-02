@@ -24,6 +24,12 @@ ApplicationClass::ApplicationClass()
 	// Cacti
 	m_Cactus = 0;
 	m_TextureShader = 0;
+
+	// Allocate memory for the number of cacti in the scene.
+	for (auto &i : m_Cacti)
+	{
+		i = 0;
+	}
 	
 	// Post Processing
 	m_BasicShader = 0;
@@ -256,6 +262,25 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 			return false;
 		}
 
+		// Initialise the vector of cacti
+		for (auto &i : m_Cacti)
+		{
+			// Create this cactus
+			i = new ModelClass;
+			if (!i)
+			{
+				return false;
+			}
+
+			// Initialise this cactus.
+			result = i->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cylinder2.txt", L"../Engine/data/SandTexture.png");
+			if (!result)
+			{
+				MessageBox(hwnd, L"Could not initialize the cacti object.", L"Error", MB_OK);
+				return false;
+			}
+		}
+
 		// Create the texture shader object.
 		m_TextureShader = new TextureShaderClass;
 		if (!m_TextureShader)
@@ -446,21 +471,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 void ApplicationClass::Shutdown()
 {
-	// Release the light object.
-	if(m_Light)
-	{
-		delete m_Light;
-		m_Light = 0;
-	}
-
-	// Release the terrain shader object.
-	if(m_TerrainShader)
-	{
-		m_TerrainShader->Shutdown();
-		delete m_TerrainShader;
-		m_TerrainShader = 0;
-	}
-
 	// Release the text object.
 	if(m_Text)
 	{
@@ -504,15 +514,7 @@ void ApplicationClass::Shutdown()
 	{
 		delete m_Timer;
 		m_Timer = 0;
-	}
-
-	// Release the terrain object.
-	if(m_Terrain)
-	{
-		m_Terrain->Shutdown();
-		delete m_Terrain;
-		m_Terrain = 0;
-	}
+	}	
 
 	// Release the camera object.
 	if(m_Camera)
@@ -537,103 +539,142 @@ void ApplicationClass::Shutdown()
 		m_Input = 0;
 	}
 
-	// Release the cube object.
-	if (m_Cactus)
-	{
-		m_Cactus->Shutdown();
-		delete m_Cactus;
-		m_Cactus = 0;
-	}
+	//////////////// Terrain ////////////////
+		// Release the light object.
+		if (m_Light)
+		{
+			delete m_Light;
+			m_Light = 0;
+		}
 
-	// Release the texture shader object.
-	if (m_TextureShader)
-	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
-	}
+		// Release the terrain object.
+		if (m_Terrain)
+		{
+			m_Terrain->Shutdown();
+			delete m_Terrain;
+			m_Terrain = 0;
+		}
+
+		// Release the terrain shader object.
+		if (m_TerrainShader)
+		{
+			m_TerrainShader->Shutdown();
+			delete m_TerrainShader;
+			m_TerrainShader = 0;
+		}
+
+	//////////////// Cacti ////////////////
+		// Release the cactus object.
+		if (m_Cactus)
+		{
+			m_Cactus->Shutdown();
+			delete m_Cactus;
+			m_Cactus = 0;
+		}
+
+		// Release all the cacti.
+		if (m_Cacti)
+		{
+			for (auto &i : m_Cacti)
+			{
+				if (i)
+				{
+					i->Shutdown();
+					delete i;
+					i = 0;
+				}
+			}
+		}
+	
+		// Release the texture shader object.
+		if (m_TextureShader)
+		{
+			m_TextureShader->Shutdown();
+			delete m_TextureShader;
+			m_TextureShader = 0;
+		}
 
 
 	//////////////////// PostProcessing ////////////////////
-	// Release the basic shader object.
-	if (m_BasicShader)
-	{
-		m_BasicShader->Shutdown();
-		delete m_BasicShader;
-		m_BasicShader = 0;
-	}
+		// Release the basic shader object.
+		if (m_BasicShader)
+		{
+			m_BasicShader->Shutdown();
+			delete m_BasicShader;
+			m_BasicShader = 0;
+		}
 
-	// Release the convolution shader object.
-	if (m_ConvolutionShader)
-	{
-		m_ConvolutionShader->Shutdown();
-		delete m_ConvolutionShader;
-		m_ConvolutionShader = 0;
-	}
+		// Release the convolution shader object.
+		if (m_ConvolutionShader)
+		{
+			m_ConvolutionShader->Shutdown();
+			delete m_ConvolutionShader;
+			m_ConvolutionShader = 0;
+		}
 
-	// Release the ortho mesh objects.
-	if (m_SmallWindow)
-	{
-		m_SmallWindow->Shutdown();
-		delete m_SmallWindow;
-		m_SmallWindow = 0;
-	}
-	if (m_FullScreenWindow)
-	{
-		m_FullScreenWindow->Shutdown();
-		delete m_FullScreenWindow;
-		m_FullScreenWindow = 0;
-	}
+		// Release the ortho mesh objects.
+		if (m_SmallWindow)
+		{
+			m_SmallWindow->Shutdown();
+			delete m_SmallWindow;
+			m_SmallWindow = 0;
+		}
+		if (m_FullScreenWindow)
+		{
+			m_FullScreenWindow->Shutdown();
+			delete m_FullScreenWindow;
+			m_FullScreenWindow = 0;
+		}
 
-	// Release the render textures.
-	if (m_RenderTexture)
-	{
-		m_RenderTexture->Shutdown();
-		delete m_RenderTexture;
-		m_RenderTexture = 0;
-	}
-	if (m_DownSampleTexture)
-	{
-		m_DownSampleTexture->Shutdown();
-		delete m_DownSampleTexture;
-		m_DownSampleTexture = 0;
-	}
-	if (m_ConvolutionTexture)
-	{
-		m_ConvolutionTexture->Shutdown();
-		delete m_ConvolutionTexture;
-		m_ConvolutionTexture = 0;
-	}
-	if (m_UpSampleTexture)
-	{
-		m_UpSampleTexture->Shutdown();
-		delete m_UpSampleTexture;
-		m_UpSampleTexture = 0;
-	}
+		// Release the render textures.
+		if (m_RenderTexture)
+		{
+			m_RenderTexture->Shutdown();
+			delete m_RenderTexture;
+			m_RenderTexture = 0;
+		}
+		if (m_DownSampleTexture)
+		{
+			m_DownSampleTexture->Shutdown();
+			delete m_DownSampleTexture;
+			m_DownSampleTexture = 0;
+		}
+		if (m_ConvolutionTexture)
+		{
+			m_ConvolutionTexture->Shutdown();
+			delete m_ConvolutionTexture;
+			m_ConvolutionTexture = 0;
+		}
+		if (m_UpSampleTexture)
+		{
+			m_UpSampleTexture->Shutdown();
+			delete m_UpSampleTexture;
+			m_UpSampleTexture = 0;
+		}
 
 
 	////////////////////// Sky Dome //////////////////////
-	if (m_SkyDome)
-	{
-		m_SkyDome->Shutdown();
-		delete m_SkyDome;
-		m_SkyDome = 0;
-	}
+		if (m_SkyDome)
+		{
+			m_SkyDome->Shutdown();
+			delete m_SkyDome;
+			m_SkyDome = 0;
+		}
 
 
-	if (m_SkyDomeShader)
-	{
-		m_SkyDomeShader->Shutdown();
-		delete m_SkyDomeShader;
-		m_SkyDomeShader = 0;
-	}
+		if (m_SkyDomeShader)
+		{
+			m_SkyDomeShader->Shutdown();
+			delete m_SkyDomeShader;
+			m_SkyDomeShader = 0;
+		}
 
-	//if (m_NoiseTexture)
-	//{
-	//	m_NoiseTexture->Shutdown();
-	//	delete m_NoiseTexture;
-	//	m_NoiseTexture = 0;
-	//}
+		/*if (m_NoiseTexture)
+		{
+			m_NoiseTexture->Shutdown();
+			delete m_NoiseTexture;
+			m_NoiseTexture = 0;
+		}*/
 
 	return;
 }
@@ -925,29 +966,48 @@ bool ApplicationClass::RenderScene()
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
 	////////////////// Terrain //////////////////
-	// Render the terrain buffers.
-	m_Terrain->Render(m_Direct3D->GetDeviceContext());
+		// Render the terrain buffers.
+		m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
-	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, 
-		viewMatrix, projectionMatrix, m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(),
-		m_Terrain->GetSandTexture(), m_Terrain->GetSlopeTexture());
-	if (!result)
-	{
-		return false;
-	}
+		// Render the terrain using the terrain shader.
+		result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, 
+			viewMatrix, projectionMatrix, m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(),
+			m_Terrain->GetSandTexture(), m_Terrain->GetSlopeTexture());
+		if (!result)
+		{
+			return false;
+		}
 
 	////////////////// Cactus //////////////////
-	// Render the model buffers.
-	m_Cactus->Render(m_Direct3D->GetDeviceContext());
+		// Render the model buffers.
+		//m_Cactus->Render(m_Direct3D->GetDeviceContext());
 
-	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
-		worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
+		//// Render the cube using the texture shader.
+		//result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
+		//	worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
+		//if (!result)
+		//{
+		//	return false;
+		//}
+
+		int itter = 0;
+
+		// Render all the cacti.
+		for (auto &i : m_Cacti)
+		{
+			
+			// offset the world matrix
+			D3DXMatrixTranslation(&worldMatrix, itter* 8, 0.0f, itter * 8);
+
+			// Render the cactus buffer.
+			i->Render(m_Direct3D->GetDeviceContext());
+
+			// Render the cactus using the texture shader.
+			result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
+				worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
+
+			itter++;
+		}
 
 	return true;
 }
