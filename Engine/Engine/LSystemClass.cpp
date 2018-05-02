@@ -58,20 +58,17 @@ void LSystemClass::Generate(int itterations)
 				//temp.append("FF[+[<F-F-F]-[>F+F+F]");
 				//temp.append("F[+F-FFF][-F+FFF]FF");
 
-
-				// Primary Rule
-				//temp.append("F[+F]F[-F]F");
-				// Upward shennanigans?
-				//temp.append("[+FF+FFFF]");
 				//////// Tested Rules ////////
+				//temp.append("F[+F]F[-F]F");
+				//temp.append("[+FF+FFFF]");
 				//temp.append("F[+F][-F[-F]F]F[+F][-F]");
 				//temp.append("F[-FF][+FF][FF");
 				//temp.append("F+FF-FF-F-F+F+FF-F-F+F+FF+FF-F");
 				//temp.append("FF+[+F-F-F]-[-F+F+F]");
-				// Palm Tree.
-				//temp.append("[+F+F+F+F+F+F+F][-F-F-F-F-F-F-F]FFFFF");
-				// Palm Tree, but with branches on branches.
-				//temp.append("[+F+F+F+F+F[-F-F-F]+F+F][-F-F-F-F-F[+F+F+F]-F-F]FFFFF");
+			
+				//temp.append("[+F+F+F+F+F+F+F][-F-F-F-F-F-F-F]FFFFF");						// Palm Tree.
+				//temp.append("[+F+F+F+F+F[-F-F-F]+F+F][-F-F-F-F-F[+F+F+F]-F-F]FFFFF");		// Palm Tree, but with branches on branches.
+					
 				// Example L-Systems from [http://www.inf.ed.ac.uk/teaching/courses/inf1/fp/2008/tutorials/Tutorial7.pdf]
 				// 32-segment
 				//temp.append("F+F-F-F+F+FF-F+F+FF+F-F-FF+FF-FF+F+F-FF-F-F+FF-F-F+F+F-F+");

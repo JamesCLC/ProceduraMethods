@@ -9,16 +9,20 @@ ApplicationClass::ApplicationClass()
 	m_Input = 0;
 	m_Direct3D = 0;
 	m_Camera = 0;
-	m_Terrain = 0;
 	m_Timer = 0;
 	m_Position = 0;
 	m_Fps = 0;
 	m_Cpu = 0;
 	m_FontShader = 0;
 	m_Text = 0;
+
+	// Terrain
 	m_TerrainShader = 0;
+	m_Terrain = 0;
 	m_Light = 0;
-	m_Cube = 0;
+
+	// Cacti
+	m_Cactus = 0;
 	m_TextureShader = 0;
 	
 	// Post Processing
@@ -57,10 +61,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	D3DXMATRIX baseViewMatrix;
 	char videoCard[128];
 	int videoMemory;
-
-	// Set the size to sample down to.
-	int downSampleWidth = screenWidth / 2;
-	int downSampleHeight = screenHeight / 2;
 
 	// Create the input object. The input object will be used to handle reading the keyboard and mouse input from the user.
 	m_Input = new InputClass;
@@ -110,21 +110,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	cameraZ = -7.0f;
 
 	m_Camera->SetPosition(cameraX, cameraY, cameraZ);
-
-	// Create the terrain object.
-	m_Terrain = new TerrainClass;
-	if(!m_Terrain)
-	{
-		return false;
-	}
-
-	// Initialize the terrain object.
-	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 128,128, L"../Engine/data/sand.jpg", L"../Engine/data/sandstone.jpg");   //initialise the flat terrain.
-	if(!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the terrain object.", L"Error", MB_OK);
-		return false;
-	}
 
 	// Create the timer object.
 	m_Timer = new TimerClass;
@@ -212,228 +197,248 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
-	// Create the terrain shader object.
-	m_TerrainShader = new TerrainShaderClass;
-	if(!m_TerrainShader)
-	{
-		return false;
-	}
+	//////////////////// Terrain ////////////////////
+		// Create the terrain object.
+		m_Terrain = new TerrainClass;
+		if (!m_Terrain)
+		{
+			return false;
+		}
 
-	// Initialize the terrain shader object.
-	result = m_TerrainShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if(!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the terrain shader object.", L"Error", MB_OK);
-		return false;
-	}
+		// Initialize the terrain object.
+		result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 128, 128, L"../Engine/data/sand.jpg", L"../Engine/data/sandstone.jpg");   //initialise the flat terrain.
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the terrain object.", L"Error", MB_OK);
+			return false;
+		}
 
-	// Create the light object.
-	m_Light = new LightClass;
-	if(!m_Light)
-	{
-		return false;
-	}
+		// Create the terrain shader object.
+		m_TerrainShader = new TerrainShaderClass;
+		if(!m_TerrainShader)
+		{
+			return false;
+		}
 
-	// Initialize the light object.
-	m_Light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetDirection(1.0f, -1.0f, 0.0f);
+		// Initialize the terrain shader object.
+		result = m_TerrainShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+		if(!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the terrain shader object.", L"Error", MB_OK);
+			return false;
+		}
 
-	// Create the cube model
-	m_Cube = new ModelClass;
-	if (!m_Cube)
-	{
-		return false;
-	}
+		// Create the light object.
+		m_Light = new LightClass;
+		if(!m_Light)
+		{
+			return false;
+		}
 
-	// Initialise the cube object.
-	result = m_Cube->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cylinder2.txt", L"../Engine/data/SandTexture.png");
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
-		return false;
-	}
+		// Initialize the light object.
+		m_Light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
+		m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+		m_Light->SetDirection(1.0f, -1.0f, 0.0f);
 
-	// Create the texture shader object.
-	m_TextureShader = new TextureShaderClass;
-	if (!m_TextureShader)
-	{
-		return false;
-	}
+	//////////////// Cacti ////////////////
+		// Create the cactus
+		m_Cactus = new ModelClass;
+		if (!m_Cactus)
+		{
+			return false;
+		}
 
-	// Initialise the texture shader.
-	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
-		return false;
-	}
+		// Initialise the cube object.
+		result = m_Cactus->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cylinder2.txt", L"../Engine/data/SandTexture.png");
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the texture shader object.
+		m_TextureShader = new TextureShaderClass;
+		if (!m_TextureShader)
+		{
+			return false;
+		}
+
+		// Initialise the texture shader.
+		result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+			return false;
+		}
 
 
 	////////// Post Processing ////////////////////
-	// Create the convolution shader object
-	m_ConvolutionShader = new ConvolutionShaderClass;
-	if (!m_ConvolutionShader)
-	{
-		return false;
-	}
+		// Create the convolution shader object
+		m_ConvolutionShader = new ConvolutionShaderClass;
+		if (!m_ConvolutionShader)
+		{
+			return false;
+		}
 
-	// Initialise the convolution shader
-	result = m_ConvolutionShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the convolution shader object.", L"Error", MB_OK);
-		return false;
-	}
+		// Initialise the convolution shader
+		result = m_ConvolutionShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the convolution shader object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the Small Window
+		m_SmallWindow = new OrthoWindowClass();
+		if (!m_SmallWindow)
+		{
+			return false;
+		}
+
+		// Set the size to sample down to.
+		int downSampleWidth = screenWidth / 2;
+		int downSampleHeight = screenHeight / 2;
+
+		// Initialise the Small Window object.
+		result = m_SmallWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the small ortho mesh object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the Small Window
+		m_FullScreenWindow = new OrthoWindowClass();
+		if (!m_FullScreenWindow)
+		{
+			return false;
+		}
+
+		// Initialise the Big Window object.
+		result = m_FullScreenWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the full screen ortho mesh object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the render texture
+		m_RenderTexture = new RenderTextureClass();
+		if (!m_RenderTexture)
+		{
+			return false;
+		}
+
+		// Initialise the render texture object.
+		result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the Down Sample Texture
+		m_DownSampleTexture = new RenderTextureClass();
+		if (!m_DownSampleTexture)
+		{
+			return false;
+		}
+
+		// Initialise the Down Sample Texture
+		result = m_DownSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the Basic Shader
+		m_BasicShader = new BasicShaderClass();
+		if (!m_BasicShader)
+		{
+			return false;
+		}
+
+		result = m_BasicShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the basic shader object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the Post Processing Texture.
+		m_ConvolutionTexture = new RenderTextureClass();
+		if (!m_ConvolutionTexture)
+		{
+			return false;
+		}
+
+		// Initialise the Post Processing Texture object.
+		result = m_ConvolutionTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the convolution texture object.", L"Error", MB_OK);
+			return false;
+		}
+
+		// Create the  Up Sample Texture
+		m_UpSampleTexture = new RenderTextureClass();
+		if (!m_UpSampleTexture)
+		{
+			return false;
+		}
+
+		// Initialise the Up Sample Texture object.
+		result = m_UpSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
+			return false;
+		}
 
 
-	// Create the Small Window
-	m_SmallWindow = new OrthoWindowClass();
-	if (!m_SmallWindow)
-	{
-		return false;
-	}
+	//////////////// Sky Dome ////////////////
+		// Initialise the Sky Dome Object
+		m_SkyDome = new SkyDomeClass();
+		if (!m_SkyDome)
+		{
+			return false;
+		}
 
-	// Initialise the Big Window object.
-	result = m_SmallWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the small ortho mesh object.", L"Error", MB_OK);
-		return false;
-	}
+		result = m_SkyDome->Initialize(m_Direct3D->GetDevice());
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the sky dome object.", L"Error", MB_OK);
+			return false;
+		}
 
-	// Create the Big Window
-	m_FullScreenWindow = new OrthoWindowClass();
-	if (!m_FullScreenWindow)
-	{
-		return false;
-	}
+		// Initialise the Sky Dome Shader Object
+		m_SkyDomeShader = new SkyDomeShaderClass();
+		if (!m_SkyDomeShader)
+		{
+			return false;
+		}
 
-	// Initialise the Big Window object.
-	result = m_FullScreenWindow->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the full screen ortho mesh object.", L"Error", MB_OK);
-		return false;
-	}
+		result = m_SkyDomeShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+		if (!result)
+		{
+			MessageBox(hwnd, L"Could not initialize the sky dome shader object.", L"Error", MB_OK);
+			return false;
+		}
 
-	// Create the render texture
-	m_RenderTexture = new RenderTextureClass();
-	if (!m_RenderTexture)
-	{
-		return false;
-	}
+		//// Initialise the Noise Texture Object.
+		//m_NoiseTexture = new NoiseTextureClass;
+		//if (!m_NoiseTexture)
+		//{
+		//	return false;
+		//}
 
-	// Initialise the render texture object.
-	result = m_RenderTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the render texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the Down Sample Texture
-	m_DownSampleTexture = new RenderTextureClass();
-	if (!m_DownSampleTexture)
-	{
-		return false;
-	}
-
-	// Initialise the Down Sample Texture
-	result = m_DownSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the Basic Shader
-	m_BasicShader = new BasicShaderClass();
-	if (!m_BasicShader)
-	{
-		return false;
-	}
-
-	result = m_BasicShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the basic shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the Post Processing Texture.
-	m_ConvolutionTexture = new RenderTextureClass();
-	if (!m_ConvolutionTexture)
-	{
-		return false;
-	}
-
-	// Initialise the Post Processing Texture object.
-	result = m_ConvolutionTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the convolution texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the  Up Sample Texture
-	m_UpSampleTexture = new RenderTextureClass();
-	if (!m_UpSampleTexture)
-	{
-		return false;
-	}
-
-	// Initialise the Up Sample Texture object.
-	result = m_UpSampleTexture->Initialize(m_Direct3D->GetDevice(), screenWidth, screenHeight/*, SCREEN_DEPTH, SCREEN_NEAR*/);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the down sample texture object.", L"Error", MB_OK);
-		return false;
-	}
-	///////////////////////////////////////////////
-	// Sky Dome
-
-	// Initialise the Sky Dome Object
-	m_SkyDome = new SkyDomeClass();
-	if (!m_SkyDome)
-	{
-		return false;
-	}
-
-	result = m_SkyDome->Initialize(m_Direct3D->GetDevice());
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the sky dome object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Initialise the Sky Dome Shader Object
-	m_SkyDomeShader = new SkyDomeShaderClass();
-	if (!m_SkyDomeShader)
-	{
-		return false;
-	}
-
-	result = m_SkyDomeShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the sky dome shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	//// Initialise the Noise Texture Object.
-	//m_NoiseTexture = new NoiseTextureClass;
-	//if (!m_NoiseTexture)
-	//{
-	//	return false;
-	//}
-
-	//result = m_NoiseTexture->Initialize(m_Direct3D->GetDevice());
-	//if (!result)
-	//{
-	//	MessageBox(hwnd, L"Could not initialize the noise texture` object.", L"Error", MB_OK);
-	//	return false;
-	//}
+		//result = m_NoiseTexture->Initialize(m_Direct3D->GetDevice());
+		//if (!result)
+		//{
+		//	MessageBox(hwnd, L"Could not initialize the noise texture` object.", L"Error", MB_OK);
+		//	return false;
+		//}
 
 	return true;
 }
@@ -533,11 +538,11 @@ void ApplicationClass::Shutdown()
 	}
 
 	// Release the cube object.
-	if (m_Cube)
+	if (m_Cactus)
 	{
-		m_Cube->Shutdown();
-		delete m_Cube;
-		m_Cube = 0;
+		m_Cactus->Shutdown();
+		delete m_Cactus;
+		m_Cactus = 0;
 	}
 
 	// Release the texture shader object.
@@ -924,9 +929,9 @@ bool ApplicationClass::RenderScene()
 	m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetSandTexture(),
-		m_Terrain->GetSlopeTexture());
+	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, 
+		viewMatrix, projectionMatrix, m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(),
+		m_Terrain->GetSandTexture(), m_Terrain->GetSlopeTexture());
 	if (!result)
 	{
 		return false;
@@ -934,10 +939,11 @@ bool ApplicationClass::RenderScene()
 
 	////////////////// Cactus //////////////////
 	// Render the model buffers.
-	m_Cube->Render(m_Direct3D->GetDeviceContext());
+	m_Cactus->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the cube using the texture shader.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix, viewMatrix, projectionMatrix, m_Cube->GetTexture());
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
+		worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -1011,11 +1017,11 @@ bool ApplicationClass::RenderSceneToTexture()
 
 	//////////////////// Cactus ////////////////////
 		// Render the model buffers.
-		m_Cube->Render(m_Direct3D->GetDeviceContext());
+		m_Cactus->Render(m_Direct3D->GetDeviceContext());
 	
 		// Render the cube using the texture shader.
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cube->GetVertexCount(), m_Cube->GetInstanceCount(), worldMatrix,
-			viewMatrix, projectionMatrix, m_Cube->GetTexture());
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(), worldMatrix,
+			viewMatrix, projectionMatrix, m_Cactus->GetTexture());
 		if (!result)
 		{
 			return false;

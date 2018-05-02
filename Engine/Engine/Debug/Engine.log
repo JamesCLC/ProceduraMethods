@@ -1,4 +1,4 @@
-﻿  modelclass.cpp
+﻿  applicationclass.cpp
 c:\program files (x86)\microsoft directx sdk (june 2010)\include\dxgitype.h(12): warning C4005: 'DXGI_STATUS_OCCLUDED': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50092): note: see previous definition of 'DXGI_STATUS_OCCLUDED'
 c:\program files (x86)\microsoft directx sdk (june 2010)\include\dxgitype.h(13): warning C4005: 'DXGI_STATUS_CLIPPED': macro redefinition
@@ -55,13 +55,9 @@ c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(608): w
   c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50445): note: see previous definition of 'D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS'
 c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(609): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50454): note: see previous definition of 'D3D10_ERROR_FILE_NOT_FOUND'
-\\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\modelclass.cpp(410): warning C4018: '<': signed/unsigned mismatch
-  LSystemClass.cpp
-\\stuhome\homedrive2$\1501082\proceduramethods\engine\engine\lsystemclass.cpp(87): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   Generating Code...
   Skipping... (no relevant changes detected)
   systemclass.cpp
   main.cpp
-  applicationclass.cpp
   Engine.vcxproj -> \\StuHome\HomeDrive2$\1501082\ProceduraMethods\Engine\Debug\Engine.exe
   Engine.vcxproj -> \\StuHome\HomeDrive2$\1501082\ProceduraMethods\Engine\Debug\Engine.pdb (Full PDB)

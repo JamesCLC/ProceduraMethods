@@ -20,7 +20,6 @@ const float SCREEN_NEAR = 0.1f;
 #include "inputclass.h"
 #include "d3dclass.h"
 #include "cameraclass.h"
-#include "terrainclass.h"
 #include "timerclass.h"
 #include "positionclass.h"
 #include "fpsclass.h"
@@ -28,17 +27,22 @@ const float SCREEN_NEAR = 0.1f;
 #include "fontshaderclass.h"
 #include "textclass.h"
 
+/// Terrain
+#include "terrainclass.h"
 #include "terrainshaderclass.h"
 #include "lightclass.h"
+
+/// Cactus
 #include "modelclass.h"
 #include "textureshaderclass.h"
+#include "vector"
 
 /// Post Prosessing
 #include "basicshaderclass.h"
 #include "convolutionshaderclass.h"
 #include "rendertextureclass.h"
 #include "orthowindowclass.h"
-/// 
+
 
 /// Skydome
 #include "skydomeclass.h"
@@ -77,17 +81,22 @@ private:
 	InputClass* m_Input;
 	D3DClass* m_Direct3D;
 	CameraClass* m_Camera;
-	TerrainClass* m_Terrain;
 	TimerClass* m_Timer;
 	PositionClass* m_Position;
 	FpsClass* m_Fps;
 	CpuClass* m_Cpu;
 	FontShaderClass* m_FontShader;
 	TextClass* m_Text;
+
+	// Terrain
+	TerrainClass* m_Terrain;
 	TerrainShaderClass* m_TerrainShader;
 	LightClass* m_Light;
-	ModelClass* m_Cube;
+
+	// Cactus
+	ModelClass* m_Cactus;
 	TextureShaderClass* m_TextureShader;
+	std::vector<ModelClass*> m_Cacti;
 
 	// Post Processing
 	BasicShaderClass* m_BasicShader;
