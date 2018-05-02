@@ -44,7 +44,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: ModelClass
 ////////////////////////////////////////////////////////////////////////////////
-class ModelClass
+class CactusClass
 {
 private:
 	struct VertexType
@@ -67,9 +67,9 @@ private:
 	};
 
 public:
-	ModelClass();
-	ModelClass(const ModelClass&);
-	~ModelClass();
+	CactusClass();
+	CactusClass(const CactusClass&);
+	~CactusClass();
 
 	bool Initialize(ID3D11Device*, char*, WCHAR*);
 	void Shutdown();

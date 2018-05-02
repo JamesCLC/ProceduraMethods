@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: modelclass.cpp
+// Filename: cactus.cpp
 ////////////////////////////////////////////////////////////////////////////////
-#include "modelclass.h"
+#include "cactusclass.h"
 
 
-ModelClass::ModelClass()
+CactusClass::CactusClass()
 {
 	m_vertexBuffer = 0;
 	m_instanceBuffer = 0;
@@ -14,17 +14,17 @@ ModelClass::ModelClass()
 }
 
 
-ModelClass::ModelClass(const ModelClass& other)
+CactusClass::CactusClass(const CactusClass& other)
 {
 }
 
 
-ModelClass::~ModelClass()
+CactusClass::~CactusClass()
 {
 }
 
 
-bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename)
+bool CactusClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename)
 {
 	bool result;
 
@@ -67,7 +67,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 }
 
 
-void ModelClass::Shutdown()
+void CactusClass::Shutdown()
 {
 	// Release the model texture.
 	ReleaseTexture();
@@ -90,7 +90,7 @@ void ModelClass::Shutdown()
 }
 
 
-void ModelClass::Render(ID3D11DeviceContext* deviceContext)
+void CactusClass::Render(ID3D11DeviceContext* deviceContext)
 {
 	// Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	RenderBuffers(deviceContext);
@@ -99,25 +99,25 @@ void ModelClass::Render(ID3D11DeviceContext* deviceContext)
 }
 
 
-int ModelClass::GetVertexCount()
+int CactusClass::GetVertexCount()
 {
 	return m_vertexCount;
 }
 
 
-int ModelClass::GetInstanceCount()
+int CactusClass::GetInstanceCount()
 {
 	return m_instanceCount;
 }
 
 
-ID3D11ShaderResourceView* ModelClass::GetTexture()
+ID3D11ShaderResourceView* CactusClass::GetTexture()
 {
 	return m_Texture->GetTexture();
 }
 
 
-bool ModelClass::InitializeBuffers(ID3D11Device* device)
+bool CactusClass::InitializeBuffers(ID3D11Device* device)
 {
 	VertexType* vertices;
 	InstanceType* instances;
@@ -206,7 +206,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 }
 
 
-void ModelClass::ShutdownBuffers()
+void CactusClass::ShutdownBuffers()
 {
 	// Release the instance buffer.
 	if(m_instanceBuffer)
@@ -226,7 +226,7 @@ void ModelClass::ShutdownBuffers()
 }
 
 
-void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
+void CactusClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {
 	unsigned int strides[2];
 	unsigned int offsets[2];
@@ -260,7 +260,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 }
 
 
-bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
+bool CactusClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
 {
 	bool result;
 
@@ -283,7 +283,7 @@ bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
 }
 
 
-void ModelClass::ReleaseTexture()
+void CactusClass::ReleaseTexture()
 {
 	// Release the texture object.
 	if(m_Texture)
@@ -297,7 +297,7 @@ void ModelClass::ReleaseTexture()
 }
 
 
-bool ModelClass::LoadModel(char* filename)
+bool CactusClass::LoadModel(char* filename)
 {
 	ifstream fin;
 	char input;
@@ -352,7 +352,7 @@ bool ModelClass::LoadModel(char* filename)
 }
 
 
-void ModelClass::ReleaseModel()
+void CactusClass::ReleaseModel()
 {
 	if(m_model)
 	{
@@ -364,7 +364,7 @@ void ModelClass::ReleaseModel()
 }
 
 
-void ModelClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
+void CactusClass::ParseAxiom(InstanceType instances[], int m_instanceCount)
 {
 	int filledInstances = 0;
 

@@ -248,7 +248,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	//////////////// Cacti ////////////////
 		// Create the cactus
-		m_Cactus = new ModelClass;
+		m_Cactus = new CactusClass;
 		if (!m_Cactus)
 		{
 			return false;
@@ -266,7 +266,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		for (auto &i : m_Cacti)
 		{
 			// Create this cactus
-			i = new ModelClass;
+			i = new CactusClass;
 			if (!i)
 			{
 				return false;

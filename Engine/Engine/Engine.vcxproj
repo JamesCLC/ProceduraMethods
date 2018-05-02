@@ -95,7 +95,7 @@
     <ClCompile Include="lightclass.cpp" />
     <ClCompile Include="LSystemClass.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="modelclass.cpp" />
+    <ClCompile Include="cactusclass.cpp" />
     <ClCompile Include="noisetextureclass.cpp" />
     <ClCompile Include="orthowindowclass.cpp" />
     <ClCompile Include="positionclass.cpp" />
@@ -124,7 +124,7 @@
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="lightclass.h" />
     <ClInclude Include="LSystemClass.h" />
-    <ClInclude Include="modelclass.h" />
+    <ClInclude Include="cactusclass.h" />
     <ClInclude Include="noisetextureclass.h" />
     <ClInclude Include="orthowindowclass.h" />
     <ClInclude Include="positionclass.h" />
