@@ -99,10 +99,9 @@ private:
 	TextureClass* m_Texture;
 	ModelType* m_model;
 
-	///
 	LSystemClass* LSystem;
 	std::string axiom;
-	///
+
 };
 
 #endif

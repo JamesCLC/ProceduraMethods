@@ -34,7 +34,7 @@ const float SCREEN_NEAR = 0.1f;
 
 /// Cactus
 #include "cactusclass.h"
-#include "textureshaderclass.h"
+#include "cactusshaderclass.h"
 
 /// Post Prosessing
 #include "basicshaderclass.h"
@@ -95,7 +95,7 @@ private:
 
 	// Cactus
 	CactusClass* m_Cactus;
-	TextureShaderClass* m_TextureShader;
+	CactusShaderClass* m_CactusShader;
 	CactusClass *m_Cacti[_NUMBER_OF_CACTI];
 
 	// Post Processing

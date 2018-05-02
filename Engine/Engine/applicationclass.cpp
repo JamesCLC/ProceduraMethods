@@ -23,9 +23,7 @@ ApplicationClass::ApplicationClass()
 
 	// Cacti
 	m_Cactus = 0;
-	m_TextureShader = 0;
-
-	// Allocate memory for the number of cacti in the scene.
+	m_CactusShader = 0;
 	for (auto &i : m_Cacti)
 	{
 		i = 0;
@@ -282,14 +280,14 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		}
 
 		// Create the texture shader object.
-		m_TextureShader = new TextureShaderClass;
-		if (!m_TextureShader)
+		m_CactusShader = new CactusShaderClass;
+		if (!m_CactusShader)
 		{
 			return false;
 		}
 
 		// Initialise the texture shader.
-		result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+		result = m_CactusShader->Initialize(m_Direct3D->GetDevice(), hwnd);
 		if (!result)
 		{
 			MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
@@ -587,11 +585,11 @@ void ApplicationClass::Shutdown()
 		}
 	
 		// Release the texture shader object.
-		if (m_TextureShader)
+		if (m_CactusShader)
 		{
-			m_TextureShader->Shutdown();
-			delete m_TextureShader;
-			m_TextureShader = 0;
+			m_CactusShader->Shutdown();
+			delete m_CactusShader;
+			m_CactusShader = 0;
 		}
 
 
@@ -925,6 +923,7 @@ bool ApplicationClass::RenderScene()
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	D3DXVECTOR3 cameraPosition;
 	bool result;
+	int itterator = 0;
 
 	// Clear the scene.
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -979,34 +978,21 @@ bool ApplicationClass::RenderScene()
 		}
 
 	////////////////// Cactus //////////////////
-		// Render the model buffers.
-		//m_Cactus->Render(m_Direct3D->GetDeviceContext());
-
-		//// Render the cube using the texture shader.
-		//result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
-		//	worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
-		//if (!result)
-		//{
-		//	return false;
-		//}
-
-		int itter = 0;
-
 		// Render all the cacti.
 		for (auto &i : m_Cacti)
 		{
 			
 			// offset the world matrix
-			D3DXMatrixTranslation(&worldMatrix, itter* 8, 0.0f, itter * 8);
+			D3DXMatrixTranslation(&worldMatrix, itterator * 8, 0.0f, itterator * 8);
 
 			// Render the cactus buffer.
 			i->Render(m_Direct3D->GetDeviceContext());
 
 			// Render the cactus using the texture shader.
-			result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
+			result = m_CactusShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
 				worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
 
-			itter++;
+			itterator++;
 		}
 
 	return true;
@@ -1018,6 +1004,7 @@ bool ApplicationClass::RenderSceneToTexture()
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	D3DXVECTOR3 cameraPosition;
 	bool result;
+	int itterator = 0;
 
 	// Set the render target to be the render to texture.
 	m_RenderTexture->SetRenderTarget(m_Direct3D->GetDeviceContext(), m_Direct3D->GetDepthStencilView());
@@ -1076,15 +1063,21 @@ bool ApplicationClass::RenderSceneToTexture()
 		}
 
 	//////////////////// Cactus ////////////////////
-		// Render the model buffers.
-		m_Cactus->Render(m_Direct3D->GetDeviceContext());
-	
-		// Render the cube using the texture shader.
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(), worldMatrix,
-			viewMatrix, projectionMatrix, m_Cactus->GetTexture());
-		if (!result)
+		// Render all the cacti.
+		for (auto &i : m_Cacti)
 		{
-			return false;
+
+			// offset the world matrix
+			D3DXMatrixTranslation(&worldMatrix, itterator * 8, 0.0f, itterator * 8);
+
+			// Render the cactus buffer.
+			i->Render(m_Direct3D->GetDeviceContext());
+
+			// Render the cactus using the texture shader.
+			result = m_CactusShader->Render(m_Direct3D->GetDeviceContext(), m_Cactus->GetVertexCount(), m_Cactus->GetInstanceCount(),
+				worldMatrix, viewMatrix, projectionMatrix, m_Cactus->GetTexture());
+
+			itterator++;
 		}
 	
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
