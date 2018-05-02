@@ -97,9 +97,12 @@
     <ClCompile Include="LSystemClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="modelclass.cpp" />
+    <ClCompile Include="noisetextureclass.cpp" />
     <ClCompile Include="orthowindowclass.cpp" />
     <ClCompile Include="positionclass.cpp" />
     <ClCompile Include="rendertextureclass.cpp" />
+    <ClCompile Include="skydomeclass.cpp" />
+    <ClCompile Include="SkyDomeShaderClass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="terrainclass.cpp" />
     <ClCompile Include="terrainshaderclass.cpp" />
@@ -124,9 +127,12 @@
     <ClInclude Include="lightclass.h" />
     <ClInclude Include="LSystemClass.h" />
     <ClInclude Include="modelclass.h" />
+    <ClInclude Include="noisetextureclass.h" />
     <ClInclude Include="orthowindowclass.h" />
     <ClInclude Include="positionclass.h" />
     <ClInclude Include="rendertextureclass.h" />
+    <ClInclude Include="skydomeclass.h" />
+    <ClInclude Include="SkyDomeShaderClass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="terrainclass.h" />
     <ClInclude Include="terrainshaderclass.h" />
@@ -142,6 +148,8 @@
     <None Include="convolution.vs" />
     <None Include="font.ps" />
     <None Include="font.vs" />
+    <None Include="skydome.ps" />
+    <None Include="skydome.vs" />
     <None Include="terrain.ps" />
     <None Include="terrain.vs" />
     <None Include="texture.ps" />
