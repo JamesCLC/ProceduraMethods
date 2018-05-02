@@ -83,7 +83,6 @@
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp" />
     <ClCompile Include="basicshaderclass.cpp" />
-    <ClCompile Include="cactusclass.cpp" />
     <ClCompile Include="cameraclass.cpp" />
     <ClCompile Include="convolutionshaderclass.cpp" />
     <ClCompile Include="cpuclass.cpp" />
@@ -114,7 +113,6 @@
   <ItemGroup>
     <ClInclude Include="applicationclass.h" />
     <ClInclude Include="basicshaderclass.h" />
-    <ClInclude Include="cactusclass.h" />
     <ClInclude Include="cameraclass.h" />
     <ClInclude Include="convolutionshaderclass.h" />
     <ClInclude Include="cpuclass.h" />

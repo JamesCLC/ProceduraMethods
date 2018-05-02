@@ -12,7 +12,7 @@ const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
-
+#define _NUMBER_OF_CACTI 16
 
 ///////////////////////
 // MY CLASS INCLUDES //
@@ -35,8 +35,6 @@ const float SCREEN_NEAR = 0.1f;
 /// Cactus
 #include "modelclass.h"
 #include "textureshaderclass.h"
-#include "vector"
-#define _NUMBER_OF_CACTI 16
 
 /// Post Prosessing
 #include "basicshaderclass.h"
@@ -70,12 +68,13 @@ private:
 	bool HandleInput(float);
 	bool RenderGraphics();
 
+	bool RenderScene();
+
 	// Post Processing
 	bool RenderSceneToTexture();
 	bool DownScaleTexture();
 	bool RenderConvolutionToTexture();
 	bool UpScaleTexture();
-	bool RenderScene();
 	bool Render2DTextureScene();
 
 private:
