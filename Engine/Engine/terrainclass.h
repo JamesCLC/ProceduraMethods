@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "improvednoise.h"
 ///
-// See http://www.rastertek.com/dx11ter03.html
+// Additional Input Information added based on: http://www.rastertek.com/dx11ter03.html
 #include "textureclass.h"
 ///
 

@@ -4,8 +4,8 @@
 #ifndef _CACTUSCLASS_H_
 #define _CACTUSCLASS_H_
 
-// Instancing Code based on - http://www.rastertek.com/dx11tut37.html
 // Model Loading/Rendering Code based on - http://www.rastertek.com/dx11tut07.html
+// Instancing Code based on - http://www.rastertek.com/dx11tut37.html
 
 //////////////
 // INCLUDES //

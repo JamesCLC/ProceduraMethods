@@ -36,10 +36,10 @@ void LSystemClass::Generate(int itterations)
 			// Sample Perlin noise for pseudo-random variation.
 			//sample = m_ImprovedNoise->Sample((double)itterations * 2, (double)itterations * 2, (double)0);
 
-			// generate a pseudo-random number between 1 and 3.
+			// generate a pseudo-random number between 1 and 10.
 			sample = rand() % 10 + 1;
 
-			// Apply a rule based on the sampled noise.
+			// Apply a rule based on each rule's probability.
 			if (axiom.at(i) == 'F')
 			{
 				if (sample >= 4)

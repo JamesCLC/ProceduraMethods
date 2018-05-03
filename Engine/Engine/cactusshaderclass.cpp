@@ -164,7 +164,7 @@ bool CactusShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR*
 	polygonLayout[2].InstanceDataStepRate = 0;
 	
 
-	// Create the instance input layout description. This uses a generic "TEXCOORD" semantic for each of the four rows of a matrix.
+	// Create the instance input layout description.
 	// Row 1
 	polygonLayout[3].SemanticName = "MATRIX";
 	polygonLayout[3].SemanticIndex = 0;
@@ -200,8 +200,6 @@ bool CactusShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR*
 	polygonLayout[6].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 	polygonLayout[6].InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
 	polygonLayout[6].InstanceDataStepRate = 1;
-
-	// NOTE: Be wary. from the post: "Although this will only work if your instance vertex buffer is bound at slot 1."
 
 	// Get a count of the elements in the layout.
     numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);

@@ -23,17 +23,18 @@ bool NoiseTextureClass::Initialize(ID3D11Device* device/*, WCHAR* filename*/)
 {
 	HRESULT result;
 	
-	float *buf = (float *)malloc(_TEXTURE_WIDTH_ * _TEXTURE_HEIGHT_ * 4 * sizeof(float));
+	// Code based on : https://stackoverflow.com/questions/23111457/creating-and-using-a-texture-in-directx
+	float *buffer = (float *)malloc(_TEXTURE_WIDTH_ * _TEXTURE_HEIGHT_ * 4 * sizeof(float));
 
 	for (int i = 0; i < _TEXTURE_WIDTH_ * _TEXTURE_HEIGHT_ * 4; i++)
 	{
-		buf[i] = 1.0f;
+		buffer[i] = 1.0f;
 	}
 
 
 	// Create the Subresource date for the texture.
 	D3D11_SUBRESOURCE_DATA m_subresourcedata;
-	m_subresourcedata.pSysMem = (void *)buf;
+	m_subresourcedata.pSysMem = (void *)buffer;
 	m_subresourcedata.SysMemPitch = _TEXTURE_WIDTH_ * 4 * sizeof(float);
 	m_subresourcedata.SysMemSlicePitch = NULL;
 
@@ -61,7 +62,7 @@ bool NoiseTextureClass::Initialize(ID3D11Device* device/*, WCHAR* filename*/)
 		return false;
 	}
 	
-	delete[] buf;
+	delete[] buffer;
 
 	return true;
 }
